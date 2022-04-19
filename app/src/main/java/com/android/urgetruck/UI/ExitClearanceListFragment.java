@@ -212,9 +212,16 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
 
 
                     } else {
-                        PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                        Log.e("msg", message.getStatusMessage());
-                        Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+                        try {
+                            PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
+                            Log.e("msg", message.getStatusMessage());
+                            Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(getActivity(), "Exit Clearance Error!!", Toast.LENGTH_SHORT).show();
+                        }
+                        
 
 
                     }

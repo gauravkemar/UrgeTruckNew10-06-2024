@@ -515,7 +515,7 @@ public class SecurityInspectionFragment extends Fragment {
         ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
         SecurityCheckModel modal = null;
 
-        if (bundle.getString("type").equals("RFID")) {
+        /*if (bundle.getString("type").equals("RFID")) {
             if (auto) {
                 modal = new SecurityCheckModel("123456789", bundle.getString("typevalue"), weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(), weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(), "", "WEIGHMENT DISTURBANCY", reason, 0);
             } else {
@@ -533,8 +533,13 @@ public class SecurityInspectionFragment extends Fragment {
             }
 
 
+        }*/
+        if (auto) {
+            modal = new SecurityCheckModel("123456789", "", weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(), weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(), weightDetailsResultModel.getWeighmentDetails().getVrn(), "WEIGHMENT DISTURBANCY", reason, 0);
+        } else {
+            int weighbridgeId = wbId.get(wbName.indexOf(actvWb.getText().toString().trim()));
+            modal = new SecurityCheckModel("123456789", "", weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(), weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(), weightDetailsResultModel.getWeighmentDetails().getVrn(), "WEIGHMENT DISTURBANCY", reason, weighbridgeId);
         }
-
 
         RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), new Gson().toJson(modal));
 

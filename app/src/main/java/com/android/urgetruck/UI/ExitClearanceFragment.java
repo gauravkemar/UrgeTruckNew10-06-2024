@@ -1,7 +1,6 @@
 package com.android.urgetruck.UI;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,14 +9,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +21,13 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
 import com.android.urgetruck.R;
 import com.android.urgetruck.UI.Models.ExistCheck;
@@ -75,9 +73,8 @@ public class ExitClearanceFragment extends Fragment {
     private LinearLayout linearLayout;
     private ArrayList<ExitClearanceParameters> exitClearanceParameters;
     private HashMap<Integer, ExitClearanceParameters> parametersHashMap = new HashMap<>();
-    private HashMap<Integer,Boolean> mandatoryItems;
-    private String mandatoryItemsValue ="";
-
+    private HashMap<Integer, Boolean> mandatoryItems;
+    private String mandatoryItemsValue = "";
 
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -114,14 +111,8 @@ public class ExitClearanceFragment extends Fragment {
         });
 
 
-
-
         return view;
     }
-
-
-
-
 
 
     private void requestPermission() {
@@ -161,7 +152,12 @@ public class ExitClearanceFragment extends Fragment {
 
     //===== select image
     private void selectImage(Context context) {
-        final CharSequence[] options = {"Choose from Gallery", "Cancel"};
+        final CharSequence[] options;
+        if (android.os.Build.MANUFACTURER.contains("Zebra Technologies") || android.os.Build.MANUFACTURER.contains("Motorola Solutions")) {
+            options = new CharSequence[]{"Choose from Gallery", "Cancel"};
+        } else {
+            options = new CharSequence[]{"Take Photo", "Choose from Gallery", "Cancel"};
+        }
 
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(context);
         builder.setCancelable(false);
@@ -276,12 +272,12 @@ public class ExitClearanceFragment extends Fragment {
 //            modal = new SecurityCheckModel("123456789", "", weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(), weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(), bundle.getString("VRN"), "WEIGHMENT DISTURBANCY", reason);
 //
 //        }
-       // ArrayList<ExitClearanceParameters> exitClearanceParameters = new ArrayList<>();
+        // ArrayList<ExitClearanceParameters> exitClearanceParameters = new ArrayList<>();
         exitClearanceParameters.add(new ExitClearanceParameters("Vehicle Body Appearance", "OK", "", ""));
         ArrayList<ExitClearanceParameters> parameters = new ArrayList<>(parametersHashMap.values());
 
 
-        PostExitClearanceModel modal = new PostExitClearanceModel("12346678", getExitClearanceModel.getExitClearanceDetails().getVrn(), getExitClearanceModel.getExitClearanceDetails().getVehicleTransactionId().toString(), getExitClearanceModel.getExitClearanceDetails().getJobMilestoneId().toString(),parameters);
+        PostExitClearanceModel modal = new PostExitClearanceModel("12346678", getExitClearanceModel.getExitClearanceDetails().getVrn(), getExitClearanceModel.getExitClearanceDetails().getVehicleTransactionId().toString(), getExitClearanceModel.getExitClearanceDetails().getJobMilestoneId().toString(), parameters);
         Log.e("request", new Gson().toJson(modal));
 
 
@@ -294,9 +290,9 @@ public class ExitClearanceFragment extends Fragment {
             @Override
             public void onResponse(Call<ExitClearanceResultModel> call, Response<ExitClearanceResultModel> response) {
                 progressBar.setVisibility(View.GONE);
-                Log.d("url",response.raw().request().body().toString());
-                Log.d("url",response.raw().request().headers().toString());
-                Log.d("url",response.raw().request().url().toString());
+                Log.d("url", response.raw().request().body().toString());
+                Log.d("url", response.raw().request().headers().toString());
+                Log.d("url", response.raw().request().url().toString());
                 try {
                     if (response.isSuccessful()) {
                         //Toast.makeText(getActivity(), "Files uploaded successfuly", Toast.LENGTH_SHORT).show();
@@ -354,15 +350,11 @@ public class ExitClearanceFragment extends Fragment {
 
         if (!Utils.isConnected(getActivity())) {
             Utils.showCustomDialog(getActivity(), getString(R.string.internet_connection));
-        }else if(!areAllTrue(bollist)){
-            Utils.showCustomDialog(getActivity(),"Please Select all Mandatory fields: "+mandatoryItemsValue);
+        } else if (!areAllTrue(bollist)) {
+            Utils.showCustomDialog(getActivity(), "PLEASE SELECT ALL MANDATORY FIELDS :\n" + mandatoryItemsValue);
 
-        }
-
-
-
-        else {
-           // Utils.showCustomDialog(getActivity(),"done");
+        } else {
+            // Utils.showCustomDialog(getActivity(),"done");
 
             ArrayList<ExitClearanceParameters> parameters = new ArrayList<>(parametersHashMap.values());
 
@@ -378,7 +370,8 @@ public class ExitClearanceFragment extends Fragment {
         }
 
     }
-    private void getCheckListItems(){
+
+    private void getCheckListItems() {
         if (Utils.isConnected(getActivity())) {
             progressBar.setVisibility(View.VISIBLE);
             String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
@@ -390,32 +383,33 @@ public class ExitClearanceFragment extends Fragment {
 
                     progressBar.setVisibility(View.GONE);
 
-                        existCheck = response.body().getExistCheckList();
-                        mandatoryItems= new HashMap<>();
+                    existCheck = response.body().getExistCheckList();
+                    mandatoryItems = new HashMap<>();
 
                     ArrayList<String> CheckListDataArray = new ArrayList<>();
-                    for (int i=0;i<existCheck.size();i++){
-                        if(existCheck.get(i).getIsMandatory()){
-                            mandatoryItems.put(i,false);
-                            mandatoryItemsValue = mandatoryItemsValue+ existCheck.get(i).getChecklistItem()+". ";
+                    for (int i = 0; i < existCheck.size(); i++) {
+                        if (existCheck.get(i).getIsMandatory()) {
+                            mandatoryItems.put(i, false);
+                            mandatoryItemsValue = mandatoryItemsValue + existCheck.get(i).getChecklistItem() + ".\n";
                         }
                         CheckListDataArray.add(existCheck.get(i).getChecklistItem());
                         CheckBox checkBox = new CheckBox(getActivity());
-                        checkBox.setText(existCheck.get(i).getChecklistItem());
-                        checkBox.setOnClickListener(OnCheckListClick(checkBox,i));
+                        if (existCheck.get(i).getIsMandatory()) {
+                            checkBox.setText(existCheck.get(i).getChecklistItem() + " **");
+                        } else {
+                            checkBox.setText(existCheck.get(i).getChecklistItem());
+                        }
+                        checkBox.setOnClickListener(OnCheckListClick(checkBox, i));
                         linearLayout.addView(checkBox);
 
                     }
-                        for( ExistCheck check : existCheck){
+                    for (ExistCheck check : existCheck) {
 
 
-                        }
+                    }
 
 
-
-
-
-                    Log.e("response",response.body().toString());
+                    Log.e("response", response.body().toString());
 
 
                 }
@@ -435,35 +429,34 @@ public class ExitClearanceFragment extends Fragment {
 
     }
 
-    private View.OnClickListener OnCheckListClick(CheckBox checkBox,int pos) {
+    private View.OnClickListener OnCheckListClick(CheckBox checkBox, int pos) {
         return new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             public void onClick(View v) {
-                if(checkBox.isChecked()){
-                 //   exitClearanceParameters.add(new ExitClearanceParameters(checkBox.getText().toString(), "OK", "", ""));
-                    mandatoryItems.replace(pos,true);
-                    parametersHashMap.put(pos,new ExitClearanceParameters(checkBox.getText().toString(), "OK", "", ""));
-                }else if(!checkBox.isChecked()){
-                    if(!parametersHashMap.isEmpty()){
+                if (checkBox.isChecked()) {
+                    //   exitClearanceParameters.add(new ExitClearanceParameters(checkBox.getText().toString(), "OK", "", ""));
+                    mandatoryItems.replace(pos, true);
+                    parametersHashMap.put(pos, new ExitClearanceParameters(checkBox.getText().toString(), "OK", "", ""));
+                } else if (!checkBox.isChecked()) {
+                    if (!parametersHashMap.isEmpty()) {
                         parametersHashMap.remove(pos);
-                        mandatoryItems.replace(pos,false);
+                        mandatoryItems.replace(pos, false);
 
                     }
 
                 }
 
-                Log.e("params",""+parametersHashMap.size());
-
+                Log.e("params", "" + parametersHashMap.size());
 
 
             }
         };
     }
-    public boolean areAllTrue(ArrayList<Boolean> array)
-    {
 
-        for(boolean b : array) {
-            if(!b)return false;
+    public boolean areAllTrue(ArrayList<Boolean> array) {
+
+        for (boolean b : array) {
+            if (!b) return false;
         }
         return true;
     }

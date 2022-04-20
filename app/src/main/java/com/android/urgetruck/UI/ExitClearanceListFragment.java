@@ -199,17 +199,21 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
                     Log.d("url", response.raw().request().headers().toString());
                     Log.d("url", response.raw().request().url().toString());
                     if (response.isSuccessful()) {
-                        Log.e("result", response.body().getExitClearanceDetails().getProducts().get(0).getProductName());
-                        getExitClearanceModel = response.body();
-                        tvVrn.setText(getExitClearanceModel.getExitClearanceDetails().getVrn());
-                        tvDriverName.setText(getExitClearanceModel.getExitClearanceDetails().getDriverName());
-                        checkList = new ArrayList<>(getExitClearanceModel.getExitClearanceDetails().getProducts().size());
-                        for (int i = 0; i < response.body().getExitClearanceDetails().getProducts().size(); i++) {
-                            checkList.add(false);
+                        try {
+                            Log.e("result", response.body().getExitClearanceDetails().getProducts().get(0).getProductName());
+                            getExitClearanceModel = response.body();
+                            tvVrn.setText(getExitClearanceModel.getExitClearanceDetails().getVrn());
+                            tvDriverName.setText(getExitClearanceModel.getExitClearanceDetails().getDriverName());
+                            checkList = new ArrayList<>(getExitClearanceModel.getExitClearanceDetails().getProducts().size());
+                            for (int i = 0; i < response.body().getExitClearanceDetails().getProducts().size(); i++) {
+                                checkList.add(false);
+                            }
+                            adapter = new ExitClearanceRecyclerViewAdapter(getActivity(), getExitClearanceModel.getExitClearanceDetails().getProducts(), checkList);
+                            rvExitClearanceList.setAdapter(adapter);
                         }
-                        adapter = new ExitClearanceRecyclerViewAdapter(getActivity(), getExitClearanceModel.getExitClearanceDetails().getProducts(), checkList);
-                        rvExitClearanceList.setAdapter(adapter);
+                        catch (Exception e) {
 
+                        }
 
                     } else {
                         try {

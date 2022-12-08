@@ -182,7 +182,8 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
         if (Utils.isConnected(getActivity())) {
             progressbar.setVisibility(View.VISIBLE);
             String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+            String port = Utils.getSharedPreferences(getActivity(), "port");
+            ApiInterface apiService = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
             Call<GetExitClearanceModel> call = null;
             if (type.equals("RFID")) {
                 call = apiService.getExitClearanceDetails(123456789, typeValue, "");

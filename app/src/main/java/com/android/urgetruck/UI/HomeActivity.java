@@ -35,17 +35,11 @@ public class HomeActivity extends AppCompatActivity {
         toolbarText = layout_toolbar.findViewById(R.id.toolbarText);
         toolbarText.setText(Utils.getSharedPreferences(this, "username"));
 
-        findViewById(R.id.cardview_scanrfid).setVisibility(View.VISIBLE);
-        findViewById(R.id.cardview_tagfid).setVisibility(View.INVISIBLE);
-        findViewById(R.id.cardview_securitycheck).setVisibility(View.INVISIBLE);
-        findViewById(R.id.cardview_physicalcheck).setVisibility(View.INVISIBLE);
-        findViewById(R.id.cardview_track).setVisibility(View.INVISIBLE);
 
         findViewById(R.id.cardview_scanrfid).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //startActivity(new Intent(HomeActivity.this, VehicleDetectionActivity.class));
-                startActivity(new Intent(HomeActivity.this, TrackVehicleActivity.class));
+                startActivity(new Intent(HomeActivity.this, VehicleDetectionActivity.class));
             }
         });
 

@@ -164,9 +164,8 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         progressBar.setVisibility(View.VISIBLE);
 
         String baseurl= Utils.getSharedPreferences(VehicleDetectionActivity.this,"apiurl");
-
-
-        ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+        String port = Utils.getSharedPreferences(VehicleDetectionActivity.this, "port");
+        ApiInterface apiService = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
 
         PostRfidModel modal;
 
@@ -228,7 +227,8 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         if(Utils.isConnected(this)){
             findViewById(R.id.progressbar).setVisibility(View.VISIBLE);
             String baseurl= Utils.getSharedPreferences(VehicleDetectionActivity.this,"apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+            String port = Utils.getSharedPreferences(VehicleDetectionActivity.this, "port");
+            ApiInterface apiService = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
             Call<LocationModel> call = apiService.getLocations(123456789);
             call.enqueue(new Callback<LocationModel>() {
                 @Override

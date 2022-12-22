@@ -71,8 +71,8 @@ public class TrackVehicleFragment extends Fragment {
             if(Utils.isConnected(getActivity())){
                 progressbar.setVisibility(View.VISIBLE);
                 String baseurl= Utils.getSharedPreferences(getActivity(),"apiurl");
-
-                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                String port = Utils.getSharedPreferences(getActivity(), "port");
+                ApiInterface apiService = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
                 TrackVehicleModel model = null;
                 if(type.equals("RFID")){
                      model = new TrackVehicleModel("12345566",typeValue,"");

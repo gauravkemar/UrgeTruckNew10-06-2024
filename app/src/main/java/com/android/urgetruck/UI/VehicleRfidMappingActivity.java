@@ -197,9 +197,9 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
                     } else {
 
                         PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                        Log.e("msg", message.getStatusMessage());
+                        //Log.e("msg", message.getStatusMessage());
                         if (message.getStatus().equals("RecordNotFound")) {
-                          //  Utils.showCustomDialog(VehicleRfidMappingActivity.this, message.getStatusMessage());
+                            Utils.showCustomDialog(VehicleRfidMappingActivity.this, message.getStatusMessage());
                             textInputLayout_vehicleno.setVisibility(View.VISIBLE);
                             autoCompleteTextView_rfid.setText(rfid);
                             btnVehicleMapping.setText("Map");

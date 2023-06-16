@@ -77,6 +77,7 @@ public class Admin extends AppCompatActivity {
         } else if (Integer.parseInt(antenna) > 300) {
             textinputantenna.setError("Entered Antenna Power Should be less than 300");
         } else {
+            Utils.postsharedPreferences(Admin.this, "antennapower", antenna);
             Utils.showCustomDialogFinish(Admin.this, "Antenna Power Successfully Updated");
 
         }

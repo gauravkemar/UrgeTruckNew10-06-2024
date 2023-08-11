@@ -83,7 +83,7 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.cardview_admin).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(HomeActivity.this, Admin.class));
+                startActivity(new Intent(HomeActivity.this, AdminNewActivity.class));
             }
         });
 

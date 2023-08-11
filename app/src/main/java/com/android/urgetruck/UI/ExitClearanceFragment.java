@@ -259,9 +259,7 @@ public class ExitClearanceFragment extends Fragment {
         }
 
         String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-        String port = Utils.getSharedPreferences(getActivity(), "port");
-
-        ApiInterface serviceInterface = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
+        ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
 //        SecurityCheckModel modal = null;
 //
 //        if (bundle.getString("type").equals("RFID")) {
@@ -375,8 +373,7 @@ public class ExitClearanceFragment extends Fragment {
         if (Utils.isConnected(getActivity())) {
             progressBar.setVisibility(View.VISIBLE);
             String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-            String port = Utils.getSharedPreferences(getActivity(), "port");
-            ApiInterface apiService = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
+            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
             Call<GetCheckListItemsModel> call = apiService.getCheckListItems(123456789);
             call.enqueue(new Callback<GetCheckListItemsModel>() {
                 @Override

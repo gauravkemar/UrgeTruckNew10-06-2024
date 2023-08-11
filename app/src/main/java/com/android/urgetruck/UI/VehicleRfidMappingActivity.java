@@ -138,8 +138,7 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
         if(Utils.isConnected(getApplicationContext())) {
             progressBar.setVisibility(View.VISIBLE);
             String baseurl= Utils.getSharedPreferences(VehicleRfidMappingActivity.this,"apiurl");
-            String port = Utils.getSharedPreferences(VehicleRfidMappingActivity.this, "port");
-            ApiInterface apiService = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
+            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
 
             RfidMappingModel modal = null;
             String rfid = autoCompleteTextView_rfid.getText().toString().trim();

@@ -27,7 +27,7 @@ public class APiClient {
         else
         {
             retrofit = new Retrofit.Builder()
-                    .baseUrl("http://"+BASE_URL+"/Service/api/MobileApp/")
+                    .baseUrl(BASE_URL+"/Service/api/MobileApp/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }

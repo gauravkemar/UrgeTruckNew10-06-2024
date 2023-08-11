@@ -127,9 +127,8 @@ public class LoginActivity extends AppCompatActivity {
 
 
         String baseurl= Utils.getSharedPreferences(LoginActivity.this,"apiurl");
-        String port = Utils.getSharedPreferences(LoginActivity.this, "port");
         Log.e("url",baseurl);
-        ApiInterface apiService = APiClient.getClient(baseurl+":"+port).create(ApiInterface.class);
+        ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
 
         LoginModel modal = new LoginModel(username,password);
 

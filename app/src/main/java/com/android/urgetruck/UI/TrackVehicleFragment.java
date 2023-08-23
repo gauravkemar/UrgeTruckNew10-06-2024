@@ -110,7 +110,7 @@ public class TrackVehicleFragment extends Fragment {
 
                         }else{
                             PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                            Log.e("msg",message.getStatusMessage());
+                           // Log.e("msg",message.getStatusMessage());
                             Utils.showCustomDialogFinish(getActivity(),message.getStatusMessage());
 
 

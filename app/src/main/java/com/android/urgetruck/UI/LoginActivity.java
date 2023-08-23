@@ -112,9 +112,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
         } else {
-
             callLoginApi(textinputusername.getEditText().getText().toString().trim(), textinputpassword.getEditText().getText().toString().trim());
-
 
         }
 

@@ -278,7 +278,7 @@ public class SecurityInspectionFragment extends Fragment {
     public void populateDropdown(View view) {
 
 
-        String[] reason = new String[]{"reason 1", "reason 3", "reason 3"};
+        String[] reason = new String[]{"WB Not working", "Vehicle Defect", "Other"};
 
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(

@@ -76,7 +76,7 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
         tvVrn = view.findViewById(R.id.tvVrn);
         tvDriverName = view.findViewById(R.id.tvDriverName);
         Bundle bundle = getArguments();
-
+        //initScanner();
         if (android.os.Build.MANUFACTURER.contains("Zebra Technologies") || android.os.Build.MANUFACTURER.contains("Motorola Solutions")) {
             EMDKResults results = EMDKManager.getEMDKManager(getActivity(), this);
 
@@ -88,7 +88,6 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
                 updateStatus("EMDKManager object initialization is   in   progress.......");
             }
         }
-
 
         getDeviceName();
         rvExitClearanceList = view.findViewById(R.id.rvExitClearanceList);
@@ -252,12 +251,9 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
 
     @Override
     public void onOpened(EMDKManager emdkManager) {
-
         if (android.os.Build.MANUFACTURER.contains("Zebra Technologies") || android.os.Build.MANUFACTURER.contains("Motorola Solutions")) {
             this.emdkManager = emdkManager;
-
             initBarcodeManager();
-
             initScanner();
         }
 
@@ -528,7 +524,7 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
             @Override
             public void run() {
                 // statusTextView.setText(""+  status);
-
+                Log.d(String.valueOf(getContext()),"Status "+ status);
 
             }
         });

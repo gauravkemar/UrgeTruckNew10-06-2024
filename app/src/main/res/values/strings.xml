@@ -3,7 +3,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
-    <string name="vehicle_detection_activity">Vehicle Detection</string>
+    <string name="vehicle_detection_activity">Manual Vehicle Detection</string>
     <string name="vehicle_rfidmapping_activity">Vehicle RFID Mapping</string>
     <string name="security_inspection_activity">Security Inspection</string>
     <string name="exit_clearance_activity">Exit Clearance</string>

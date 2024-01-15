@@ -16,6 +16,9 @@ import com.android.urgetruck.UI.Models.TrackVehicleResultModel;
 import com.android.urgetruck.UI.Models.WBListResultModel;
 import com.android.urgetruck.UI.Models.WBResponseModel;
 import com.android.urgetruck.UI.Models.WeightDetailsResultModel;
+import com.android.urgetruck.UI.Models.invoicecheckingstar.GetLoadingDetailOnVehicleDetailResponse;
+import com.android.urgetruck.UI.Models.invoicecheckingstar.UpdateLoadingCompleteMilestoneRequest;
+import com.android.urgetruck.UI.Models.invoicecheckingstar.UpdateLoadingCompleteMilestoneResponse;
 
 import java.util.List;
 
@@ -89,10 +92,19 @@ public interface ApiInterface {
 
 
 
+
     @GET("GetAllWeighBridgeList")
     Call<WBResponseModel> getAllWeighBridgeList();
 
+    //new api
 
+    @GET("GetLoadingDetailOnVehicleDetail")
+    Call<GetLoadingDetailOnVehicleDetailResponse> GetLoadingDetailOnVehicleDetail(@Query("RequestId") int RequestID,
+                                                                                  @Query("VRN") String vrn,
+                                                                                  @Query("RFIDTagNo") String Rfid);
+
+    @POST("PostVehicleTrackingRequest")
+    Call<UpdateLoadingCompleteMilestoneResponse> updateLoadingCompleteMilestone(@Body UpdateLoadingCompleteMilestoneRequest updateLoadingCompleteMilestoneRequest);
 
 
 

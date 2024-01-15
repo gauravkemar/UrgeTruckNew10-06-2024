@@ -21,7 +21,6 @@
             android:gravity="center"
             android:orientation="vertical">
 
-
             <include layout="@layout/scan_layout1" />
 
             <Button

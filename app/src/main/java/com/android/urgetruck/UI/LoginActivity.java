@@ -53,13 +53,11 @@ public class LoginActivity extends AppCompatActivity {
         {
             startActivity(new Intent(LoginActivity.this, HomeActivity.class));
             finish();
-
         }
         findViewById(R.id.buttonLogin).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 confirmInput(view);
-
             }
         });
 
@@ -109,14 +107,9 @@ public class LoginActivity extends AppCompatActivity {
                 Utils.postsharedPreferences(LoginActivity.this,"token","local");
                 startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                 finish();
-
-
         } else {
             callLoginApi(textinputusername.getEditText().getText().toString().trim(), textinputpassword.getEditText().getText().toString().trim());
-
         }
-
-
 
     }
 

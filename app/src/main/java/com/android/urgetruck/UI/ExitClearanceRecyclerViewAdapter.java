@@ -61,8 +61,6 @@ public class ExitClearanceRecyclerViewAdapter extends RecyclerView.Adapter<ExitC
            holder.tvVerifyBarcode.setBackgroundColor(Color.parseColor("#FF4CAF50"));
         }
 
-
-
         }
 
         private void verifyBarcode() {

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -66,6 +67,7 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
     View layout_toolbar;
     TextView toolbarText;
 
+    private MediaPlayer mediaPlayer;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +77,7 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
         }
         layout_toolbar = findViewById(R.id.layout_toolbar);
         initToolbar();
+
         btnVehicleMapping = findViewById(R.id.btnVehicleMapping);
         btnVehicleMapping.setText("Verify Tag");
         progressBar = findViewById(R.id.progressbar);
@@ -99,6 +102,7 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
     }
 
     private void initToolbar() {
+        mediaPlayer = MediaPlayer.create(this, R.raw.scanner_sound);
         toolbarText = layout_toolbar.findViewById(R.id.toolbarText);
         toolbarText.setText(getString(R.string.vehicle_rfidmapping_activity));
         ImageView ivLogo =layout_toolbar.findViewById(R.id.ivLogoLeftToolbar);
@@ -137,6 +141,7 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
 
         if(Utils.isConnected(getApplicationContext())) {
             progressBar.setVisibility(View.VISIBLE);
+
             String baseurl= Utils.getSharedPreferences(VehicleRfidMappingActivity.this,"apiurl");
             ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
 
@@ -189,8 +194,6 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
                             autoCompleteTextView_rfid.setText(rfid);
                             btnVehicleMapping.setVisibility(View.GONE);
                             Utils.showCustomDialogFinish(VehicleRfidMappingActivity.this, response.body().getStatusMessage());
-
-
                         }
 
                     } else {
@@ -213,17 +216,15 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
                             tvVrn.setFocusable(false);
                             btnVehicleMapping.setVisibility(View.GONE);
 
-
                         }
-
                     }
-
 
                 }
 
                 @Override
                 public void onFailure(Call<RfidMappingResultModel> call, Throwable t) {
                     progressBar.setVisibility(View.GONE);
+                    Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
                     Log.e("error", t.toString());
 
                 }
@@ -261,6 +262,7 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
         try {
 
             TagData detectedTag = rfidReadEvents.getReadEventData().tagData;
+            mediaPlayer.start();
 
             if(detectedTag != null){
                 reader.Actions.Inventory.stop();
@@ -388,5 +390,11 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
         }
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+        }
+    }
 }

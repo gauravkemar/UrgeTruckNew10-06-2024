@@ -8,7 +8,9 @@ public class WBListResultModel {
     @SerializedName("weighBridgeId")
     @Expose
     private int wbId;
-
+    @SerializedName("weighBridgeName")
+    @Expose
+    private String wbName;
     public WBListResultModel() {
 
     }
@@ -34,7 +36,5 @@ public class WBListResultModel {
         this.wbName = wbName;
     }
 
-    @SerializedName("weighBridgeName")
-    @Expose
-    private String wbName;
+
 }

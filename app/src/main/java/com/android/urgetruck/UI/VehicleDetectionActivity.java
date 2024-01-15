@@ -2,6 +2,7 @@ package com.android.urgetruck.UI;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -73,6 +74,7 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
     private Boolean checkstate = true;
     View layout_toolbar;
     TextView toolbarText;
+    private MediaPlayer mediaPlayer;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,8 +90,7 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         autoCompleteTextView_reason = findViewById(R.id.autoCompleteTextView_reason);
         textInputLayoutlocation = findViewById(R.id.textInputLayoutlocation);
         textInputLayoutreasons = findViewById(R.id.textInputLayoutreasons);
-         tvRfid =
-                findViewById(R.id.autoCompleteTextView_rfid);
+         tvRfid = findViewById(R.id.autoCompleteTextView_rfid);
          tv_rfid = findViewById(R.id.tv_rfid);
         textInputLayout_vehicleno = findViewById(R.id.textInputLayout_vehicleno);
         rgVehicleDetails = findViewById(R.id.rgVehicleDetails);
@@ -149,6 +150,7 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
     }
 
     private void initToolbar() {
+        mediaPlayer = MediaPlayer.create(this, R.raw.scanner_sound);
         toolbarText = layout_toolbar.findViewById(R.id.toolbarText);
         toolbarText.setText(getString(R.string.vehicle_detection_activity));
 
@@ -224,41 +226,45 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
 
 
     private void getLocationData() {
-        if(Utils.isConnected(this)){
-            findViewById(R.id.progressbar).setVisibility(View.VISIBLE);
-            String baseurl= Utils.getSharedPreferences(VehicleDetectionActivity.this,"apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
-            Call<LocationModel> call = apiService.getLocations(123456789);
-            call.enqueue(new Callback<LocationModel>() {
-                @Override
-                public void onResponse(Call<LocationModel> call, Response<LocationModel> response) {
-                    LocationModel locationModel = response.body();
-                    locations = locationModel.getLocations();
-                    ArrayList<String> locationDataArray = new ArrayList<>();
-                    for( Location location : locations){
-                        locationDataArray.add(location.getDeviceName());
+        try{
+            if(Utils.isConnected(this)){
+                findViewById(R.id.progressbar).setVisibility(View.VISIBLE);
+                String baseurl= Utils.getSharedPreferences(VehicleDetectionActivity.this,"apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                Call<LocationModel> call = apiService.getLocations(123456789);
+                call.enqueue(new Callback<LocationModel>() {
+                    @Override
+                    public void onResponse(Call<LocationModel> call, Response<LocationModel> response) {
+                        LocationModel locationModel = response.body();
+                        locations = locationModel.getLocations();
+                        ArrayList<String> locationDataArray = new ArrayList<>();
+                        for( Location location : locations){
+                            locationDataArray.add(location.getDeviceName());
+
+                        }
+                        populateDropdown(locationDataArray);
+                        findViewById(R.id.progressbar).setVisibility(View.GONE);
 
                     }
-                    populateDropdown(locationDataArray);
-                    findViewById(R.id.progressbar).setVisibility(View.GONE);
 
+                    @Override
+                    public void onFailure(Call<LocationModel> call, Throwable t) {
+                        Log.d("TAG","Response = "+t.toString());
+                        findViewById(R.id.progressbar).setVisibility(View.GONE);
+                        Utils.showCustomDialogFinish(VehicleDetectionActivity.this,t.toString());
 
+                    }
+                });
 
-
-                }
-
-                @Override
-                public void onFailure(Call<LocationModel> call, Throwable t) {
-                    Log.d("TAG","Response = "+t.toString());
-                    findViewById(R.id.progressbar).setVisibility(View.GONE);
-                    Utils.showCustomDialogFinish(VehicleDetectionActivity.this,t.toString());
-
-                }
-            });
-
-        }else{
-            Utils.showCustomDialogFinish(this,getString(R.string.internet_connection));
+            }else{
+                Utils.showCustomDialogFinish(this,getString(R.string.internet_connection));
+            }
         }
+        catch (Exception e)
+        {
+            Utils.showCustomDialogFinish(this,e.getMessage());
+        }
+
 
     }
 
@@ -292,7 +298,7 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         try {
 
             TagData detectedTag = rfidReadEvents.getReadEventData().tagData;
-
+            mediaPlayer.start();
             if(detectedTag != null){
                 reader.Actions.Inventory.stop();
 
@@ -310,8 +316,6 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
 
 
                 Spinner spinner = findViewById(R.id.spinner);
-
-
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -484,13 +488,14 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         }else{
 
             callPostRfidApi();
-
-
-
         }
-
-
-
         //Toast.makeText(this, input, Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+        }
     }
 }

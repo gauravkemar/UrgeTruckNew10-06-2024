@@ -7,19 +7,19 @@ public class TrackVehicleModel {
     @SerializedName("RequestId")
     @Expose
     private String requestId;
-
-    public TrackVehicleModel(String requestId, String rFIDTagNo, String vrn) {
-        this.requestId = requestId;
-        this.rFIDTagNo = rFIDTagNo;
-        this.vrn = vrn;
-    }
-
     @SerializedName("RFIDTagNo")
     @Expose
     private String rFIDTagNo;
     @SerializedName("VRN")
     @Expose
     private String vrn;
+    public TrackVehicleModel(String requestId, String rFIDTagNo, String vrn) {
+        this.requestId = requestId;
+        this.rFIDTagNo = rFIDTagNo;
+        this.vrn = vrn;
+    }
+
+
 
     public String getRequestId() {
         return requestId;

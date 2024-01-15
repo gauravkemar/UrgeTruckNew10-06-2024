@@ -14,6 +14,9 @@ public class RfidMappingModel {
     @SerializedName("RFIDTagNo")
     @Expose
     private String rFIDTagNo;
+    @SerializedName("ForceMap")
+    @Expose
+    private String forceMap;
 
     public RfidMappingModel(String requestId, String vrn, String rFIDTagNo, String forceMap) {
         this.requestId = requestId;
@@ -22,9 +25,7 @@ public class RfidMappingModel {
         this.forceMap = forceMap;
     }
 
-    @SerializedName("ForceMap")
-    @Expose
-    private String forceMap;
+
 
     public String getRequestId() {
         return requestId;

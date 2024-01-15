@@ -91,10 +91,7 @@ public class ExitClearanceFragment extends Fragment {
         tvDriverName.setText(getExitClearanceModel.getExitClearanceDetails().getDriverName());
         exitClearanceParameters = new ArrayList<>();
         getCheckListItems();
-
-
         parentLinearLayout = view.findViewById(R.id.parent_linear_layout);
-
         ImageView addImage = view.findViewById(R.id.iv_add_image);
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,10 +139,8 @@ public class ExitClearanceFragment extends Fragment {
     public void addImage() {
         if (files.size() > 4) {
             Toast.makeText(getActivity(), "Maximum 5 photos can be uploaded", Toast.LENGTH_SHORT).show();
-
         } else {
             selectImage(getActivity());
-
         }
 
     }
@@ -164,7 +159,6 @@ public class ExitClearanceFragment extends Fragment {
         builder.setTitle("Choose a Media");
 
         builder.setItems(options, new DialogInterface.OnClickListener() {
-
             @Override
             public void onClick(DialogInterface dialog, int item) {
 
@@ -221,15 +215,11 @@ public class ExitClearanceFragment extends Fragment {
                         parentLinearLayout.isFocusable();
 
                         selectedImage = rowView.findViewById(R.id.number_edit_text);
-
                         Uri img = data.getData();
                         Picasso.get().load(img).into(selectedImage);
-
                         String imgPath = FileUtil.getPath(getActivity(), img);
-
                         files.add(Uri.parse(imgPath));
                         Log.e("image", imgPath);
-
                     }
                     break;
             }
@@ -303,7 +293,6 @@ public class ExitClearanceFragment extends Fragment {
                     }
 
                     Log.e("res code", response.code() + "");
-
 
                 } catch (Exception e) {
                     Log.d("Exception", "|=>" + e.getMessage());
@@ -402,16 +391,9 @@ public class ExitClearanceFragment extends Fragment {
 
                     }
                     for (ExistCheck check : existCheck) {
-
-
                     }
-
-
                     Log.e("response", response.body().toString());
-
-
                 }
-
                 @Override
                 public void onFailure(Call<GetCheckListItemsModel> call, Throwable t) {
                     Log.d("TAG", "Response = " + t.toString());

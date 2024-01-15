@@ -7,7 +7,7 @@ public class PostRfidModel {
     String RFIDTagNo;
     String DevicelocationId;
     String VRN;
-
+    String Reason;
     public PostRfidModel(String requestId, String RFIDTagNo, String devicelocationId, String VRN, String reason) {
         RequestId = requestId;
         this.RFIDTagNo = RFIDTagNo;
@@ -16,7 +16,7 @@ public class PostRfidModel {
         Reason = reason;
     }
 
-    String Reason;
+
 
     public PostRfidResultModel getPostRfidResultModel() {
         return postRfidResultModel;

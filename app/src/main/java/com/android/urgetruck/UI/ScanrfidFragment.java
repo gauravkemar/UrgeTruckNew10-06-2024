@@ -1,5 +1,6 @@
 package com.android.urgetruck.UI;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -57,7 +58,7 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
     private AutoCompleteTextView autoCompleteTextView_rfid;
 
 
-
+    private MediaPlayer mediaPlayer;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -65,8 +66,7 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
         Button scanFragment = view.findViewById(R.id.btn_scanrfid);
         rgVehicleDetails = view.findViewById(R.id.rgVehicleDetails);
         rbScanRfid = view.findViewById(R.id.rbScanRfid);
-        tvRfid =
-                view.findViewById(R.id.autoCompleteTextView_rfid);
+        tvRfid = view.findViewById(R.id.autoCompleteTextView_rfid);
         tv_rfid = view.findViewById(R.id.tv_rfid);
         autoCompleteTextView_rfid = view.findViewById(R.id.autoCompleteTextView_rfid);
 
@@ -82,8 +82,6 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
             @Override
             public void onClick(View view) {
                 confirmInput(view);
-
-//
             }
         });
         rgVehicleDetails.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -103,13 +101,9 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
                     tvRfid.setText("");
                     tv_rfid.setVisibility(View.GONE);
                     checkstate = false;
-
-
                 }
             }
         });
-
-
         return view;
     }
 
@@ -118,10 +112,10 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
         try {
 
             TagData detectedTag = rfidReadEvents.getReadEventData().tagData;
+            mediaPlayer.start();
 
             if (detectedTag != null) {
                 reader.Actions.Inventory.stop();
-
                 String tagID = detectedTag.getTagID();
                 if (!TagDataSet.contains(tagID))
                     TagDataSet.add(tagID);
@@ -134,33 +128,24 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
 
                 AutoCompleteTextView editTextFilledExposedDropdown3 =
                         getActivity().findViewById(R.id.autoCompleteTextView_rfid);
-
-
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if(TagDataSet.size()==1){
                             autoCompleteTextView_rfid.setText(adapter1.getItem(0).toString(), false);
-
                         }else{
                             autoCompleteTextView_rfid.setText("");
                             tv_rfid.setError("Select the RFID value from dropdown");
                         }
                         autoCompleteTextView_rfid.setAdapter(adapter1);
-
-
                     }
                 });
-
-
             }
         } catch (InvalidUsageException e) {
             e.printStackTrace();
         } catch (OperationFailureException e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -196,7 +181,7 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
     private void connectReader() {
 
         try {
-
+            mediaPlayer = MediaPlayer.create(requireActivity(), R.raw.scanner_sound);
             readers = new Readers(getActivity(), ENUM_TRANSPORT.SERVICE_SERIAL);
 
             ArrayList<ReaderDevice> readerDevices = readers.GetAvailableRFIDReaderList();
@@ -264,7 +249,6 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
         } else if(rbVrn.isChecked() && vrnInput.length()<8) {
             textInputLayout_vehicleno.setError("Please enter 8 to 10 digits VRN");
             return false;
-
         }
         return true;
 
@@ -324,14 +308,12 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
 
 
                 }
-
-
         }
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
-
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+        }
     }
 }

@@ -13,13 +13,21 @@ import com.android.urgetruck.UI.Models.RfidMappingResultModel;
 import com.android.urgetruck.UI.Models.SecurityCheckResultModel;
 import com.android.urgetruck.UI.Models.TrackVehicleModel;
 import com.android.urgetruck.UI.Models.TrackVehicleResultModel;
-import com.android.urgetruck.UI.Models.WBListResultModel;
 import com.android.urgetruck.UI.Models.WBResponseModel;
 import com.android.urgetruck.UI.Models.WeightDetailsResultModel;
+
+
+import com.android.urgetruck.UI.Models.exitclearancenew.ExitClearanceInvoicingResponse;
+import com.android.urgetruck.UI.Models.exitclearancenew.ExitInvoiceUpdateListResponse;
+import com.android.urgetruck.UI.Models.exitclearancenew.GeneralResponse;
 import com.android.urgetruck.UI.Models.invoicecheckingstar.GetLoadingDetailOnVehicleDetailResponse;
 import com.android.urgetruck.UI.Models.invoicecheckingstar.UpdateLoadingCompleteMilestoneRequest;
 import com.android.urgetruck.UI.Models.invoicecheckingstar.UpdateLoadingCompleteMilestoneResponse;
 
+import com.android.urgetruck.UI.Models.vehicledetectionnew.getlocationlist.GetLocationListResponse;
+import com.android.urgetruck.UI.Models.vehicledetectionnew.getlocationmasterdatabylocationId.GetLocationMasterDataByLocationIdResponse;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.MultipartBody;
@@ -82,15 +90,10 @@ public interface ApiInterface {
     Call<ExitClearanceResultModel> postExitClearance(@Part List<MultipartBody.Part> files, @Part("JSONData") RequestBody name);
 
 
-
-
     // Track Vehicle
 
     @POST("PostVehicleTrackingRequest")
     Call<TrackVehicleResultModel> getTrackVehicleDetails(@Body TrackVehicleModel trackVehicleModel);
-
-
-
 
 
     @GET("GetAllWeighBridgeList")
@@ -106,6 +109,30 @@ public interface ApiInterface {
     @POST("PostVehicleTrackingRequest")
     Call<UpdateLoadingCompleteMilestoneResponse> updateLoadingCompleteMilestone(@Body UpdateLoadingCompleteMilestoneRequest updateLoadingCompleteMilestoneRequest);
 
+
+    //newExit Clearance
+    @GET("GetInvoiceDetailOnVehicleDetail")
+    Call<ExitClearanceInvoicingResponse> GetInvoiceDetailOnVehicleDetail(@Query("RequestId") int RequestID,
+                                                                         @Query("VRN") String vrn,
+                                                                         @Query("RFIDTagNo") String Rfid);
+    @POST("UpdateInvoiceDetailOnVehicle")
+    Call<ExitInvoiceUpdateListResponse> UpdateInvoiceDetailOnVehicleDetail(@Body ExitClearanceInvoicingResponse exitClearanceInvoicingResponse);
+
+  @POST("GetInvoiceDetailOnVehicleDetail")
+    Call<GeneralResponse> UpdatePhysicalCheckList(@Body ExitClearanceInvoicingResponse exitClearanceInvoicingResponse);
+
+
+  //new vehicle detection
+
+    @GET("GetLocationMasterData")
+    Call<GetLocationListResponse> getVehicleLocationDefaultList(@Query("RequestId") int requestId, @Query("ParentLocationCode") String parentLocationCode);
+  @GET("GetLocationMasterData")
+  Call<GetLocationListResponse> getVehicleLocationList(@Query("RequestId") int RequestID,@Query("ParentLocationCode") int parentLocationCode);
+
+
+
+    @GET("GetLocationMasterDataByLocationId")
+  Call<ArrayList<GetLocationMasterDataByLocationIdResponse>> getLocationMasterDataByLocationId(@Query("RequestId") int RequestID, @Query("LocationId") int locationId);
 
 
 }

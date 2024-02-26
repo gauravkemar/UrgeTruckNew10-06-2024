@@ -46,6 +46,7 @@ import com.zebra.rfid.api3.STOP_TRIGGER_TYPE;
 import com.zebra.rfid.api3.TagData;
 import com.zebra.rfid.api3.TriggerInfo;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -224,8 +225,18 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
                 @Override
                 public void onFailure(Call<RfidMappingResultModel> call, Throwable t) {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
                     Log.e("error", t.toString());
+
+                    if (t instanceof SocketTimeoutException) {
+                        // Handle timeout exception with custom message
+                        Toast.makeText(VehicleRfidMappingActivity.this,"Network error,\n Please check Network!!",Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        // Handle other exceptions
+                        Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
+
+                    }
 
                 }
             });
@@ -369,6 +380,8 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
 
 
             }
+
+            
         }catch (InvalidUsageException e){
             e.printStackTrace();
         }catch (OperationFailureException e){

@@ -17,11 +17,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                >
+                android:layout_height="wrap_content">
 
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -129,16 +125,31 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:background="@color/bgcolor"
             app:layout_constraintTop_toBottomOf="@+id/layout_toolbar"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:background="@color/bgcolor">
+            app:layout_constraintBottom_toBottomOf="parent">
+
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clInvoiceList"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone"
-                android:orientation="vertical"
+
                 >
+                <TextView
+                    android:id="@+id/tvInvoice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="INVOICE VERIFICATION"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    />
                 <TextView
                     android:id="@+id/tvVRN"
                     android:layout_width="0dp"
@@ -150,27 +161,27 @@
                     android:padding="5dp"
                     android:layout_margin="5dp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvInvoice"
                     app:layout_constraintEnd_toStartOf="@+id/tvVRNValue"
                     />
                 <TextView
                     android:id="@+id/tvVRNValue"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="WB76A7850"
+                    android:text=""
                     android:textColor="@color/black"
                     android:textAlignment="center"
                     android:padding="5dp"
                     android:layout_margin="5dp"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvInvoice"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/tvVRN"
                     />
                 <TextView
-                    android:id="@+id/tvLocName"
+                    android:id="@+id/tvTransactionId"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="LOC NAME :"
+                    android:text="Transaction ID:"
                     android:textColor="@color/black"
                     android:textStyle="bold"
                     android:textAlignment="center"
@@ -178,53 +189,65 @@
                     android:layout_margin="5dp"
                     app:layout_constraintTop_toBottomOf="@+id/tvVRN"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/tvLocNameValue"
+                    app:layout_constraintEnd_toStartOf="@+id/tvTransactionIdValue"
                     />
                 <TextView
-                    android:id="@+id/tvLocNameValue"
+                    android:id="@+id/tvTransactionIdValue"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Packer 1"
+                    android:text=""
                     android:padding="5dp"
                     android:layout_margin="5dp"
                     android:textColor="@color/black"
                     android:textAlignment="center"
                     app:layout_constraintTop_toBottomOf="@+id/tvVRNValue"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/tvLocName"
+                    app:layout_constraintStart_toEndOf="@+id/tvTransactionId"
                     />
                 <View
                     android:id="@+id/view1"
                     android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:background="@color/light_grey"
-                    app:layout_constraintBottom_toTopOf="@+id/table_first_item"
-                    app:layout_constraintTop_toBottomOf="@+id/tvLocName"
+                    android:layout_height="1dp"
+                    android:layout_margin="5dp"
+                    android:background="@color/primaryColor"
+                     app:layout_constraintTop_toBottomOf="@+id/tvTransactionId"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
                 <include
-                    android:id="@+id/table_first_item"
-                    layout="@layout/table_item_first"
+                    android:id="@+id/table_first_item_invoice_list"
+                    layout="@layout/first_item_table_invoice"
                     android:layout_width="match_parent"
+                    android:visibility="gone"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp"
                     app:layout_constraintTop_toBottomOf="@+id/view1"
                     app:layout_constraintBottom_toTopOf="@+id/rcInvoiceList"/>
+                <TextView
+                    android:id="@+id/tvNoInvoiceFound"
+                    android:layout_width="wrap_content"
+                    android:text="No Invoice Found for verification!!"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    android:textSize="12sp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/view1"
+                    app:layout_constraintBottom_toTopOf="@+id/btnSubmit"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    />
+
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rcInvoiceList"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
+                    android:visibility="gone"
                     android:layout_marginBottom="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_marginEnd="5dp"
-                    tools:listitem="@layout/start_invoice_list_item"
+                    tools:listitem="@layout/exit_clearance_invoice_check_list_item"
                     app:layout_constraintBottom_toTopOf="@+id/btnSubmit"
-                    app:layout_constraintTop_toBottomOf="@+id/table_first_item"
+                    app:layout_constraintTop_toBottomOf="@+id/table_first_item_invoice_list"
                     />
 
                 <Button
@@ -237,15 +260,128 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clPhysicalCheck"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:id="@+id/tvPhysicalCheckVRN"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="VRN:"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvPhysicalCheckVRNValue"
+                    />
+                <TextView
+                    android:id="@+id/tvPhysicalCheckVRNValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="WB76A7850"
+                    android:textColor="@color/black"
+                    android:textAlignment="center"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvPhysicalCheckVRN"
+                    />
+                <TextView
+                    android:id="@+id/tvPhysicalCheckLocName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="LOC NAME :"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintTop_toBottomOf="@+id/tvPhysicalCheckVRN"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvPhysicalCheckLocNameValue"
+                    />
+                <TextView
+                    android:id="@+id/tvPhysicalCheckLocNameValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Packer 1"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    android:textColor="@color/black"
+                    android:textAlignment="center"
+                    app:layout_constraintTop_toBottomOf="@+id/tvPhysicalCheckVRNValue"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvPhysicalCheckLocName"
+                    />
+                <View
+                    android:id="@+id/view1_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/light_grey"
+                    app:layout_constraintBottom_toTopOf="@+id/table_first_item_physical_list"
+                    app:layout_constraintTop_toBottomOf="@+id/tvPhysicalCheckLocName"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+                <include
+                    android:id="@+id/table_first_item_physical_list"
+                    layout="@layout/table_item_first"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    app:layout_constraintTop_toBottomOf="@+id/view1_1"
+                    app:layout_constraintBottom_toTopOf="@+id/rcPhysicalCheckInvoiceList"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcPhysicalCheckInvoiceList"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    tools:listitem="@layout/invoice_checking_check_list_item"
+                    app:layout_constraintBottom_toTopOf="@+id/btnPhysicalCheckSubmit"
+                    app:layout_constraintTop_toBottomOf="@+id/table_first_item_physical_list"
+                    />
+
+                <Button
+                    android:id="@+id/btnPhysicalCheckSubmit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:backgroundTint="@color/secondaryColor"
+                    android:text="Submit"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
 
                     />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+            <FrameLayout
+                android:id="@+id/exitClearanceContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                />
+
 
             <LinearLayout
                 android:id="@+id/ll_scan"
                 android:visibility="visible"
-
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
@@ -253,9 +389,9 @@
                 android:gravity="center"
                 android:orientation="vertical">
                 <include
+
                     android:id="@+id/scanLayout"
-                    layout="@layout/scan_layout"
-                    />
+                    layout="@layout/scan_layout" />
                 <Button
                     android:id="@+id/btn_scanrfid"
                     android:layout_width="match_parent"
@@ -267,6 +403,14 @@
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

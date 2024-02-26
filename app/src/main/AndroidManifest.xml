@@ -24,6 +24,12 @@
         android:theme="@style/Theme.UrgeTruck"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".UI.view.VehicleDetectionNewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UI.view.ExitClearanceNewActivity"
+            android:exported="false" />
+        <activity
             android:name=".UI.view.InvoiceCheckingStarActivity"
             android:exported="false" />
         <activity

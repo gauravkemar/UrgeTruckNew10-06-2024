@@ -48,6 +48,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -216,8 +217,15 @@ public class SecurityInspectionFragment extends Fragment {
                 public void onFailure(Call<WeightDetailsResultModel> call, Throwable t) {
                     Log.d("TAG", "Response = " + t.toString());
                     progressBar.setVisibility(View.GONE);
-                    Utils.showCustomDialog(getActivity(), t.toString());
+                   // Utils.showCustomDialog(getActivity(), t.toString());
+                    if (t instanceof SocketTimeoutException) {
+                        // Handle timeout exception with custom message
+                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                    } else {
+                        // Handle other exceptions
+                        Utils.showCustomDialog(getActivity(), t.toString());
 
+                    }
                 }
             });
 
@@ -264,8 +272,14 @@ public class SecurityInspectionFragment extends Fragment {
                 public void onFailure(Call<WBResponseModel> call, Throwable t) {
                     Log.d("TAG", "Response = " + t.toString());
                     progressBar.setVisibility(View.GONE);
-                    Utils.showCustomDialog(getActivity(), t.toString());
-
+                    //Utils.showCustomDialog(getActivity(), t.toString());
+                    if (t instanceof SocketTimeoutException) {
+                        // Handle timeout exception with custom message
+                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                    } else {
+                        // Handle other exceptions
+                        Utils.showCustomDialog(getActivity(),t.toString());
+                    }
                 }
             });
 
@@ -420,20 +434,15 @@ public class SecurityInspectionFragment extends Fragment {
 
             @Override
             public void onClick(DialogInterface dialog, int item) {
-
                 if (options[item].equals("Take Photo")) {
                     Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(takePicture, 0);
-
                 } else if (options[item].equals("Choose from Gallery")) {
                     Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(pickPhoto, 1);//one can be replaced with any action code
-
                 } else if (options[item].equals("Cancel")) {
                     dialog.dismiss();
                 }
-
-
             }
         });
         builder.show();
@@ -451,16 +460,12 @@ public class SecurityInspectionFragment extends Fragment {
                         // Add the new row before the add field button.
                         parentLinearLayout.addView(rowView, parentLinearLayout.getChildCount() - 1);
                         parentLinearLayout.isFocusable();
-
                         selectedImage = rowView.findViewById(R.id.number_edit_text);
                         Bitmap img = (Bitmap) data.getExtras().get("data");
                         selectedImage.setImageBitmap(img);
                         Picasso.get().load(getImageUri(getActivity(), img)).into(selectedImage);
-
                         String imgPath = FileUtil.getPath(getActivity(), getImageUri(getActivity(), img));
-
                         files.add(Uri.parse(imgPath));
-
                         Log.e("image", imgPath);
                     }
 
@@ -472,14 +477,10 @@ public class SecurityInspectionFragment extends Fragment {
                         // Add the new row before the add field button.
                         parentLinearLayout.addView(rowView, parentLinearLayout.getChildCount() - 1);
                         parentLinearLayout.isFocusable();
-
                         selectedImage = rowView.findViewById(R.id.number_edit_text);
-
                         Uri img = data.getData();
                         Picasso.get().load(img).into(selectedImage);
-
                         String imgPath = FileUtil.getPath(getActivity(), img);
-
                         files.add(Uri.parse(imgPath));
                         Log.e("image", imgPath);
 
@@ -577,7 +578,15 @@ public class SecurityInspectionFragment extends Fragment {
             public void onFailure(Call<SecurityCheckResultModel> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Log.i("my", t.getMessage());
-                Utils.showCustomDialog(getActivity(), t.getMessage());
+               // Utils.showCustomDialog(getActivity(), t.getMessage());
+
+                if (t instanceof SocketTimeoutException) {
+                    // Handle timeout exception with custom message
+                    Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                } else {
+                    // Handle other exceptions
+                    Utils.showCustomDialog(getActivity(),t.toString());
+                }
 
             }
         });

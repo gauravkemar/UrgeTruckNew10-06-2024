@@ -26,6 +26,7 @@ import com.android.urgetruck.UI.Utils.Utils;
 import com.android.urgetruck.UI.adapter.InvoiceCheckingStarAdapter;
 import com.android.urgetruck.UI.viemodel.InvoiceCheckingStarViewModel;
 import com.android.urgetruck.databinding.ActivityInvoiceCheckingStarBinding;
+import com.android.urgetruck.databinding.ScanLayoutBinding;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.zebra.rfid.api3.Antennas;
@@ -63,7 +64,7 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
 
     private TextInputLayout tv_rfid, textInputLayout_vehicleno;
     private RadioButton rbScanRfid, rbVrn;
-
+    private RecyclerView rcExitClearanceInvoiceList;
     private InvoiceCheckingStarViewModel invoiceCheckingStarViewModel;
     ActivityInvoiceCheckingStarBinding binding;
     private MediaPlayer mediaPlayer;
@@ -72,27 +73,40 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
     private Boolean checkstate = true;
     private TextInputEditText tvVrn;
 
+    ScanLayoutBinding scanLayoutBinding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_invoice_checking_star);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+        binding.toolbarText.setText("Loading");
+        binding.ivLogoLeftToolbar.setVisibility(View.VISIBLE);
+
+        binding.ivLogoLeftToolbar.setImageResource(R.drawable.ut_logo_with_outline);
+        scanLayoutBinding = binding.scanLayout;
+
         invoiceCheckingStarViewModel = new ViewModelProvider(this).get(InvoiceCheckingStarViewModel.class);
         TagDataSet = new ArrayList<>();
         connectReader();
-        tvRfid = findViewById(R.id.autoCompleteTextView_rfid);
-        tv_rfid = findViewById(R.id.tv_rfid);
+        tvRfid = scanLayoutBinding.autoCompleteTextViewRfid;
+        tv_rfid =   scanLayoutBinding.tvRfid;
         mediaPlayer = MediaPlayer.create(this, R.raw.scanner_sound);
         baseurl = Utils.getSharedPreferences(InvoiceCheckingStarActivity.this, "apiurl");
-        rgVehicleDetails = findViewById(R.id.rgVehicleDetails);
-        rbScanRfid = findViewById(R.id.rbScanRfid);
-        textInputLayout_vehicleno = findViewById(R.id.textInputLayout_vehicleno);
-        rbVrn = findViewById(R.id.rbVrn);
-        tvVrn = findViewById(R.id.tvVrn);
+        rgVehicleDetails = scanLayoutBinding.rgVehicleDetails;
+        rbScanRfid = scanLayoutBinding.rbScanRfid;
+        textInputLayout_vehicleno = scanLayoutBinding.textInputLayoutVehicleno;
+        rcExitClearanceInvoiceList = binding.rcInvoiceList;
+
+
+        rbVrn = scanLayoutBinding.rbVrn;
+        tvVrn = scanLayoutBinding.tvVrn;
         rgVehicleDetails.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 if (radioGroup.getCheckedRadioButtonId() == R.id.rbScanRfid) {
-
                     textInputLayout_vehicleno.setVisibility(View.GONE);
                     tvVrn.setText("");
                     tv_rfid.setError("");
@@ -105,30 +119,37 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
                     tvRfid.setText("");
                     tv_rfid.setVisibility(View.GONE);
                     checkstate = false;
-
-
                 }
             }
         });
-        findViewById(R.id.btn_vehicledetection).setOnClickListener(new View.OnClickListener() {
+        binding.btnScanrfid.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 confirmInput(view);
 
             }
         });
-
+        setContentView(binding.getRoot());
     }
 
     public void confirmInput(View v) {
         if (!validateRFIDorVRN()) {
             return;
         }
-        if (!Utils.isConnected(InvoiceCheckingStarActivity.this)) {
-            Utils.showCustomDialog(InvoiceCheckingStarActivity.this, getString(R.string.internet_connection));
+        if (!Utils.isConnected(this)) {
+            Utils.showCustomDialog(this, getString(R.string.internet_connection));
         } else {
 
-            submitVin();
+            if (rgVehicleDetails.getCheckedRadioButtonId() == R.id.rbScanRfid) {
+                //bundle.putString("type","RFID");
+                //bundle.putString("typevalue",tvRfid.getText().toString().trim());
+                submitVin("RFID");
+            } else if (rgVehicleDetails.getCheckedRadioButtonId() == R.id.rbVrn) {
+                //bundle.putString("type","VRN");
+                //bundle.putString("typevalue",tvVrn.getText().toString().trim());
+                submitVin("VRN");
+            }
+
         }
         //Toast.makeText(this, input, Toast.LENGTH_SHORT).show();
     }
@@ -190,7 +211,7 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
         }
     }
 
-    private void submitVin() {
+/*    private void submitVin() {
         try {
             String rfidScanned = tvRfid.getText().toString().trim();
             if (!rfidScanned.isEmpty()) {
@@ -205,7 +226,33 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
             e.printStackTrace();
         }
 
+    }*/
+
+    private void submitVin(String type) {
+        try {
+            String scannedValue = "";
+            if (type.equals("RFID")) {
+                scannedValue = tvRfid.getText().toString().trim();
+            } else if (type.equals("VRN")) {
+                scannedValue = tvVrn.getText().toString().trim();
+            }
+
+            if (!scannedValue.isEmpty()) {
+                if(checkstate)
+                {
+                    getList(baseurl, generateRandom(), "", scannedValue);
+                }
+                else {
+                    getList(baseurl, generateRandom(), scannedValue, "");
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+
 
     private void getList(String baseUrl, int requestID, String vrn, String Rfid) {
         invoiceCheckingStarViewModel.getLoadingDetailOnVehicleResponse(baseUrl, requestID, vrn, Rfid).observe(this, new Observer<GetLoadingDetailOnVehicleDetailResponse>() {
@@ -213,17 +260,26 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
             public void onChanged(GetLoadingDetailOnVehicleDetailResponse resultResponse) {
                 if(resultResponse!=null)
                 {
-                    binding.clInvoiceList.setVisibility(View.VISIBLE);
-                    binding.llScan.setVisibility(View.GONE);
+
+
                     getLoadingDetailOnVehicleDetailResponse = resultResponse;
-                    productList = (ArrayList<Product>) resultResponse.getProduct();
-                    showOnRecyclerView(productList);
-                    binding.btnSubmit.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            submitList(resultResponse);
-                        }
-                    });
+
+
+                    if(resultResponse.getProduct().size() > 0 )
+                    {
+                        productList = (ArrayList<Product>) resultResponse.getProduct();
+                        showOnRecyclerView(productList);
+                        binding.clInvoiceList.setVisibility(View.VISIBLE);
+                        binding.llScan.setVisibility(View.GONE);
+                        binding.btnSubmit.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                submitValidationList(resultResponse);
+                            }
+                        });
+                    }
+
+
                 }
                 else {
                     binding.clInvoiceList.setVisibility(View.GONE);
@@ -256,7 +312,7 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
         });
     }
 
-    private void submitList(GetLoadingDetailOnVehicleDetailResponse response) {
+    private void submitValidationList(GetLoadingDetailOnVehicleDetailResponse response) {
         try {
             if (productRequestList.size() > 0) {
                 submitList(baseurl, generateRandom(), response.getMilestoneTransactionCode(),
@@ -346,46 +402,43 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
     @Override
     public void eventReadNotify(RfidReadEvents rfidReadEvents) {
         try {
-
             TagData detectedTag = rfidReadEvents.getReadEventData().tagData;
             mediaPlayer.start();
             if (detectedTag != null) {
-                reader.Actions.Inventory.stop();
+                if(binding.llScan.getVisibility()==View.VISIBLE)
+                {
+                    reader.Actions.Inventory.stop();
+                    String tagID = detectedTag.getTagID();
 
-                String tagID = detectedTag.getTagID();
+                    if (!TagDataSet.contains(tagID))
+                        TagDataSet.add(tagID);
 
-                if (!TagDataSet.contains(tagID))
-                    TagDataSet.add(tagID);
+                    ArrayAdapter<String> adapter1 =
+                            new ArrayAdapter<>(
+                                    this,
+                                    R.layout.dropdown_menu_popup_item,
+                                    TagDataSet);
+                    Spinner spinner = scanLayoutBinding.spinner;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
 
-                ArrayAdapter<String> adapter1 =
-                        new ArrayAdapter<>(
-                                this,
-                                R.layout.dropdown_menu_popup_item,
-                                TagDataSet);
-
-
-                Spinner spinner = findViewById(R.id.spinner);
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        if (TagDataSet.size() == 1) {
-                            tvRfid.setText(adapter1.getItem(0).toString(), false);
-
-                        } else {
-                            tvRfid.setText("");
-                            tv_rfid.setError("Select the RFID value from dropdown");
+                            if (TagDataSet.size() == 1) {
+                                tvRfid.setText(adapter1.getItem(0).toString(), false);
+                            } else {
+                                tvRfid.setText("");
+                                tv_rfid.setError("Select the RFID value from dropdown");
+                            }
+                            tvRfid.setAdapter(adapter1);
+                            spinner.setAdapter(adapter1);
                         }
-
-                        tvRfid.setAdapter(adapter1);
-
-                        spinner.setAdapter(adapter1);
-
-
-                    }
-                });
-
+                    });
+                }
+               /* else {
+                    String tagID = detectedTag.getTagID();
+                    exitClearanceNewAdapter.markCheckboxByTag(tagID);
+                    exitClearanceNewAdapter.notifyDataSetChanged();
+                }*/
             }
         } catch (InvalidUsageException e) {
             e.printStackTrace();
@@ -393,7 +446,6 @@ public class InvoiceCheckingStarActivity extends AppCompatActivity implements Rf
             e.printStackTrace();
         }
     }
-
     @Override
     public void onDestroy() {
         super.onDestroy();

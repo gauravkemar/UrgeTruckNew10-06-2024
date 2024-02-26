@@ -44,6 +44,7 @@ import com.symbol.emdk.barcode.ScannerResults;
 import com.symbol.emdk.barcode.StatusData;
 import com.symbol.emdk.barcode.StatusData.ScannerStates;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 import retrofit2.Call;
@@ -76,6 +77,7 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
         tvVrn = view.findViewById(R.id.tvVrn);
         tvDriverName = view.findViewById(R.id.tvDriverName);
         Bundle bundle = getArguments();
+        Log.d("ExitClearance","This is ExitClearance List Fragment");
         //initScanner();
         if (android.os.Build.MANUFACTURER.contains("Zebra Technologies") || android.os.Build.MANUFACTURER.contains("Motorola Solutions")) {
             EMDKResults results = EMDKManager.getEMDKManager(getActivity(), this);
@@ -135,14 +137,11 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
 
 
         getClearanceList(bundle.getString("type"), bundle.
-
                 getString("typevalue"));
 
         btnproceed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
                 if (areAllTrue(checkList)) {
                     Bundle bundle1 = new Bundle();
                     bundle1.putSerializable("data", getExitClearanceModel);
@@ -155,7 +154,6 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
                     Utils.showCustomDialog(getActivity(), "Please Verify all barcodes");
 
                 }
-
 //                Bundle bundle1 = new Bundle();
 //                bundle1.putSerializable("data",getExitClearanceModel);
 //                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
@@ -163,10 +161,8 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
 //                exitClearanceFragment.setArguments(bundle1);
 //                transaction.replace(R.id.physicalcheckfragment_container, exitClearanceFragment);
 //                transaction.commit();
-
             }
         });
-
         return view;
     }
 
@@ -174,9 +170,7 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
         String manufacturer = Build.MANUFACTURER;
         String model = Build.MODEL;
         Log.e("result", manufacturer + "   " + model);
-
     }
-
     private void getClearanceList(String type, String typeValue) {
         if (Utils.isConnected(getActivity())) {
             progressbar.setVisibility(View.VISIBLE);
@@ -238,8 +232,14 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
                 public void onFailure(Call<GetExitClearanceModel> call, Throwable t) {
                     Log.d("TAG", "Response = " + t.toString());
                     progressbar.setVisibility(View.GONE);
-                    Utils.showCustomDialog(getActivity(), t.toString());
-
+                    //Utils.showCustomDialog(getActivity(), t.toString());
+                    if (t instanceof SocketTimeoutException) {
+                        // Handle timeout exception with custom message
+                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                    } else {
+                        // Handle other exceptions
+                        Utils.showCustomDialog(getActivity(),t.toString());
+                    }
                 }
             });
 
@@ -329,8 +329,10 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
             case ERROR:
                 // Error has occurred during scanning
                 statusStr = "An error has occurred.";
+
                 break;
             default:
+
                 break;
         }
         // Updates TextView with scanner state on UI thread.
@@ -348,6 +350,7 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
         }
     }
 
+    /////scanner on click
     public void scanBarcode() {
         if (scanner == null || scanner != null) {
             // Get default scanner defined on the device

@@ -72,7 +72,7 @@ public class InvoiceCheckingStarAdapter extends RecyclerView.Adapter<InvoiceChec
         public ViewHolder(@NonNull  View itemView) {
             super(itemView);
 
-            invoiceCheckBox=itemView.findViewById(R.id.checkBoxInvoice);
+           // invoiceCheckBox=itemView.findViewById(R.id.checkBoxInvoice);
             productName=itemView.findViewById(R.id.tv_column_one);
             productCategory=itemView.findViewById(R.id.tv_column_two);
             productTransactionCode=itemView.findViewById(R.id.tv_column_three);

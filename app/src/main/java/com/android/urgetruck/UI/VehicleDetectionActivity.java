@@ -48,6 +48,7 @@ import com.zebra.rfid.api3.STOP_TRIGGER_TYPE;
 import com.zebra.rfid.api3.TagData;
 import com.zebra.rfid.api3.TriggerInfo;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,6 +76,8 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
     View layout_toolbar;
     TextView toolbarText;
     private MediaPlayer mediaPlayer;
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +106,7 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 location = locations.get(i).getDeviceLocationId().toString();
+
             }
         });
 
@@ -141,8 +145,6 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
                     tvRfid.setText("");
                     tv_rfid.setVisibility(View.GONE);
                     checkstate = false;
-
-
                 }
             }
         });
@@ -204,26 +206,24 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
 
                 }
 
-
-
-
-
-
             }
 
             @Override
             public void onFailure(Call<PostRfidResultModel> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Log.e("error",t.toString());
-                Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
+               // Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
 
-
+                if (t instanceof SocketTimeoutException) {
+                    // Handle timeout exception with custom message
+                    Utils.showCustomDialog(VehicleDetectionActivity.this,"Network error,\n Please check Network!!");
+                } else {
+                    // Handle other exceptions
+                    Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
+                }
             }
         });
     }
-
-
-
 
     private void getLocationData() {
         try{
@@ -251,7 +251,15 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
                     public void onFailure(Call<LocationModel> call, Throwable t) {
                         Log.d("TAG","Response = "+t.toString());
                         findViewById(R.id.progressbar).setVisibility(View.GONE);
-                        Utils.showCustomDialogFinish(VehicleDetectionActivity.this,t.toString());
+                       // Utils.showCustomDialogFinish(VehicleDetectionActivity.this,t.toString());
+
+                        if (t instanceof SocketTimeoutException) {
+                            // Handle timeout exception with custom message
+                            Utils.showCustomDialog(VehicleDetectionActivity.this,"Network error,\n Please check Network!!");
+                        } else {
+                            // Handle other exceptions
+                            Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
+                        }
 
                     }
                 });
@@ -290,6 +298,8 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
 
         AutoCompleteTextView editTextFilledExposedDropdown1 =
                 findViewById(R.id.autoCompleteTextView_reason);
+
+
         editTextFilledExposedDropdown1.setAdapter(adapter1);
     }
 

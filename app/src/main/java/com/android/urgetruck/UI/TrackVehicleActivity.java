@@ -26,18 +26,13 @@ public class TrackVehicleActivity extends AppCompatActivity {
         }
         layout_toolbar = findViewById(R.id.layout_toolbar);
         initToolbar();
-
         FragmentTransaction fragmentTransaction =getSupportFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.trackvehiclefragment_container,new ScanrfidFragment());
         fragmentTransaction.commit();
-
-
     }
-
     private void initToolbar() {
         toolbarText = layout_toolbar.findViewById(R.id.toolbarText);
         toolbarText.setText(getString(R.string.track_vehicle_activity));
-
         ImageView ivLogo =layout_toolbar.findViewById(R.id.ivLogoLeftToolbar);
         ivLogo.setVisibility(View.VISIBLE);
         ivLogo.setImageResource(R.drawable.ut_logo_with_outline);

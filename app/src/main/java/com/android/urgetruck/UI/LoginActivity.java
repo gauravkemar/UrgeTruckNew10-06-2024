@@ -19,6 +19,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
 
+import java.net.SocketTimeoutException;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -142,6 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                     Utils.showCustomDialog(LoginActivity.this,message.getMessage());
 
 
+
                 }
 
                 //Log.e("submit response",response.body().getEmail());
@@ -153,7 +156,14 @@ public class LoginActivity extends AppCompatActivity {
             public void onFailure(Call<LoginResultModel> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Log.e("error",t.toString());
-                Utils.showCustomDialog(LoginActivity.this,t.toString());
+                if (t instanceof SocketTimeoutException) {
+                    // Handle timeout exception with custom message
+                    Utils.showCustomDialog(LoginActivity.this,"Network error,\n Please check Network!!");
+                } else {
+                    // Handle other exceptions
+                    Utils.showCustomDialog(LoginActivity.this,t.toString());
+                }
+
 
             }
         });

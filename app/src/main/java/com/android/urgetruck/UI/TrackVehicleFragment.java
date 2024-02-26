@@ -28,6 +28,7 @@ import com.android.urgetruck.UI.Network.ApiInterface;
 import com.android.urgetruck.UI.Utils.Utils;
 import com.google.gson.Gson;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,8 +128,14 @@ public class TrackVehicleFragment extends Fragment {
                     public void onFailure(Call<TrackVehicleResultModel> call, Throwable t) {
                         Log.d("TAG","Response = "+t.toString());
                         progressbar.setVisibility(View.GONE);
-                        Utils.showCustomDialog(getActivity(),t.toString());
-
+                       // Utils.showCustomDialog(getActivity(),t.toString());
+                        if (t instanceof SocketTimeoutException) {
+                            // Handle timeout exception with custom message
+                            Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                        } else {
+                            // Handle other exceptions
+                            Utils.showCustomDialog(getActivity(),t.toString());
+                        }
                     }
                 });
 

@@ -12,12 +12,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.urgetruck.R;
 import com.android.urgetruck.UI.Utils.Utils;
+import com.android.urgetruck.UI.view.ExitClearanceNewActivity;
+import com.android.urgetruck.UI.view.InvoiceCheckingStarActivity;
 
 public class HomeActivity extends AppCompatActivity {
 
     //HomeRecyclerViewAdapter adapter;
     TextView toolbarText;
     View layout_toolbar;
+    ImageView settingBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -26,11 +29,15 @@ public class HomeActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+        layout_toolbar = findViewById(R.id.layout_toolbar);
+        settingBtn= layout_toolbar.findViewById(R.id.ivRightSettings);
         if (Utils.getSharedPreferences(this, "isadmin").equals("true")) {
-            findViewById(R.id.cardview_admin).setVisibility(View.VISIBLE);
+            //findViewById(R.id.cardview_admin).setVisibility(View.VISIBLE);
+            settingBtn.setVisibility(View.VISIBLE);
         }
 
-        layout_toolbar = findViewById(R.id.layout_toolbar);
+
+
         initToolbar();
         toolbarText = layout_toolbar.findViewById(R.id.toolbarText);
         toolbarText.setText(Utils.getSharedPreferences(this, "username"));
@@ -59,7 +66,8 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.cardview_physicalcheck).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(HomeActivity.this, ExitClearanceActivity.class));
+                //startActivity(new Intent(HomeActivity.this, ExitClearanceActivity.class));
+                startActivity(new Intent(HomeActivity.this, ExitClearanceNewActivity.class));
             }
         });
         findViewById(R.id.cardview_track).setOnClickListener(new View.OnClickListener() {
@@ -80,12 +88,22 @@ public class HomeActivity extends AppCompatActivity {
             }
         });*/
 
-        findViewById(R.id.cardview_admin).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.cardview_start_invoice).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //startActivity(new Intent(HomeActivity.this, AdminNewActivity.class));
+                startActivity(new Intent(HomeActivity.this, InvoiceCheckingStarActivity.class));
+            }
+        });
+
+        settingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
                 startActivity(new Intent(HomeActivity.this, AdminNewActivity.class));
             }
         });
+
 
     }
 

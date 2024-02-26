@@ -1,4 +1,4 @@
-package com.android.urgetruck.UI;
+package com.android.urgetruck.UI.view;
 
 import android.Manifest;
 import android.content.Context;
@@ -9,6 +9,17 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,13 +33,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import com.android.urgetruck.R;
 import com.android.urgetruck.UI.Models.ExistCheck;
 import com.android.urgetruck.UI.Models.ExitClearanceParameters;
@@ -36,10 +40,15 @@ import com.android.urgetruck.UI.Models.ExitClearanceResultModel;
 import com.android.urgetruck.UI.Models.GetCheckListItemsModel;
 import com.android.urgetruck.UI.Models.GetExitClearanceModel;
 import com.android.urgetruck.UI.Models.PostExitClearanceModel;
+import com.android.urgetruck.UI.Models.invoicecheckingstar.UpdateLoadingCompleteMilestoneResponse;
 import com.android.urgetruck.UI.Network.APiClient;
 import com.android.urgetruck.UI.Network.ApiInterface;
 import com.android.urgetruck.UI.Utils.FileUtil;
 import com.android.urgetruck.UI.Utils.Utils;
+import com.android.urgetruck.UI.viemodel.InvoiceCheckingStarViewModel;
+import com.android.urgetruck.databinding.FragmentExitClearancePhysicalCheckListBinding;
+import com.android.urgetruck.databinding.PhysicalcheckLayoutBinding;
+import com.android.urgetruck.databinding.UploadPhotoBinding;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
@@ -58,7 +67,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class ExitClearanceFragment extends Fragment {
+public class ExitClearancePhysicalCheckListFragment extends Fragment {
+
 
     @Nullable
     ProgressBar progressBar;
@@ -78,22 +88,34 @@ public class ExitClearanceFragment extends Fragment {
     private String mandatoryItemsValue = "";
 
 
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_physical_check, container, false);
+    FragmentExitClearancePhysicalCheckListBinding binding;
+    PhysicalcheckLayoutBinding physicalcheckLayoutBinding;
+    UploadPhotoBinding uploadPhotoBinding;
+    private InvoiceCheckingStarViewModel invoiceCheckingStarViewModel;
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        binding= DataBindingUtil.inflate(inflater,R.layout.fragment_exit_clearance_physical_check_list, container, false);
+        physicalcheckLayoutBinding = PhysicalcheckLayoutBinding.inflate(inflater, container, false);
+
+        uploadPhotoBinding = UploadPhotoBinding.inflate(inflater, container, false);
+        invoiceCheckingStarViewModel = new ViewModelProvider(this).get(InvoiceCheckingStarViewModel.class);
         Bundle bundle = getArguments();
         getExitClearanceModel = (GetExitClearanceModel) bundle.getSerializable("data");
         Log.e("result", getExitClearanceModel.getExitClearanceDetails().getDriverName());
-        tvVrn = view.findViewById(R.id.tvVrn);
-        tvDriverName = view.findViewById(R.id.tvDriverName);
-        progressBar = view.findViewById(R.id.progressbar);
-        linearLayout = view.findViewById(R.id.linearLayout);
+        tvVrn = physicalcheckLayoutBinding.tvVrn ;
+
+        tvDriverName = physicalcheckLayoutBinding. tvDriverName ;
+        progressBar = binding. progressbar ;
+        linearLayout = physicalcheckLayoutBinding.linearLayout ;
         tvVrn.setText(getExitClearanceModel.getExitClearanceDetails().getVrn());
         tvDriverName.setText(getExitClearanceModel.getExitClearanceDetails().getDriverName());
         exitClearanceParameters = new ArrayList<>();
         getCheckListItems();
-        parentLinearLayout = view.findViewById(R.id.parent_linear_layout);
-        ImageView addImage = view.findViewById(R.id.iv_add_image);
+        parentLinearLayout = uploadPhotoBinding. parentLinearLayout;
+        ImageView addImage = uploadPhotoBinding.ivAddImage;
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,7 +123,7 @@ public class ExitClearanceFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.btSubmit).setOnClickListener(new View.OnClickListener() {
+        physicalcheckLayoutBinding. btSubmit .setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 confirmInput(view);
@@ -110,17 +132,15 @@ public class ExitClearanceFragment extends Fragment {
 
         Log.d("ExitClearance","This is ExitClearance Fragment");
 
-
-        return view;
+        // Inflate the layout for this fragment
+        return binding.getRoot();
     }
-
 
     private void requestPermission() {
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_PERMISSIONS);
         }
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
@@ -138,7 +158,6 @@ public class ExitClearanceFragment extends Fragment {
         }
 
     }
-
     public void addImage() {
         if (files.size() > 4) {
             Toast.makeText(getActivity(), "Maximum 5 photos can be uploaded", Toast.LENGTH_SHORT).show();
@@ -147,8 +166,6 @@ public class ExitClearanceFragment extends Fragment {
         }
 
     }
-
-    //===== select image
     private void selectImage(Context context) {
         final CharSequence[] options;
         if (android.os.Build.MANUFACTURER.contains("Zebra Technologies") || android.os.Build.MANUFACTURER.contains("Motorola Solutions")) {
@@ -164,9 +181,11 @@ public class ExitClearanceFragment extends Fragment {
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
+
                 if (options[item].equals("Take Photo")) {
                     Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(takePicture, 0);
+
                 } else if (options[item].equals("Choose from Gallery")) {
                     Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(pickPhoto, 1);//one can be replaced with any action code
@@ -174,11 +193,12 @@ public class ExitClearanceFragment extends Fragment {
                 } else if (options[item].equals("Cancel")) {
                     dialog.dismiss();
                 }
+
+
             }
         });
         builder.show();
     }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -224,7 +244,6 @@ public class ExitClearanceFragment extends Fragment {
             }
         }
     }
-
     public Uri getImageUri(Context inContext, Bitmap inImage) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -232,8 +251,6 @@ public class ExitClearanceFragment extends Fragment {
         Log.d("image uri", path);
         return Uri.parse(path);
     }
-
-    //===== Upload files to server
     public void uploadImages() {
 
         progressBar.setVisibility(View.VISIBLE);
@@ -247,8 +264,7 @@ public class ExitClearanceFragment extends Fragment {
             list.add(prepareFilePart("file", uri));
         }
 
-        String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-        ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
+
 //        SecurityCheckModel modal = null;
 //
 //        if (bundle.getString("type").equals("RFID")) {
@@ -260,6 +276,14 @@ public class ExitClearanceFragment extends Fragment {
 //
 //        }
         // ArrayList<ExitClearanceParameters> exitClearanceParameters = new ArrayList<>();
+
+
+     //working
+
+        /*
+        String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+        ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
+
         exitClearanceParameters.add(new ExitClearanceParameters("Vehicle Body Appearance", "OK", "", ""));
         ArrayList<ExitClearanceParameters> parameters = new ArrayList<>(parametersHashMap.values());
 
@@ -304,18 +328,46 @@ public class ExitClearanceFragment extends Fragment {
             public void onFailure(Call<ExitClearanceResultModel> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Log.i("my", t.getMessage());
-                //Utils.showCustomDialog(getActivity(), t.getMessage());
-                if (t instanceof SocketTimeoutException) {
-                    // Handle timeout exception with custom message
-                    Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                } else {
-                    // Handle other exceptions
-                    Utils.showCustomDialog(getActivity(),t.toString());
+                Utils.showCustomDialog(getActivity(), t.getMessage());
+
+            }
+        });*/
+
+   /*     String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+
+        exitClearanceParameters.add(new ExitClearanceParameters("Vehicle Body Appearance", "OK", "", ""));
+        ArrayList<ExitClearanceParameters> parameters = new ArrayList<>(parametersHashMap.values());
+
+
+        PostExitClearanceModel modal = new PostExitClearanceModel("12346678", getExitClearanceModel.getExitClearanceDetails().getVrn(), getExitClearanceModel.getExitClearanceDetails().getVehicleTransactionId().toString(), getExitClearanceModel.getExitClearanceDetails().getJobMilestoneId().toString(), parameters);
+        Log.e("request", new Gson().toJson(modal));
+
+        invoiceCheckingStarViewModel.updateExitClearancePhysicalMutableLiveData(baseUrl, updateLoadingCompleteMilestoneRequest).observe(this, new Observer<UpdateLoadingCompleteMilestoneResponse>() {
+            @Override
+            public void onChanged(UpdateLoadingCompleteMilestoneResponse resultResponse) {
+        try {
+                    if (response.isSuccessful()) {
+                        //Toast.makeText(getActivity(), "Files uploaded successfuly", Toast.LENGTH_SHORT).show();
+                        Utils.showCustomDialogFinish(getActivity(), response.body().getStatus());
+                        Log.e("main", "the status is ----> " + response.body().getStatus());
+                        Log.e("main", "the message is ----> " + response.body().getStatusMassage());
+                    } else {
+                        Log.e("error", new Gson().toJson(response.errorBody()));
+                        Utils.showCustomDialog(getActivity(), new Gson().toJson(response.errorBody()));
+                    }
+
+                    Log.e("res code", response.code() + "");
+
+                } catch (Exception e) {
+                    Log.d("Exception", "|=>" + e.getMessage());
+                    Utils.showCustomDialog(getActivity(), e.getMessage());
+//
                 }
             }
-        });
-    }
+        });*/
 
+
+    }
     @NonNull
     private MultipartBody.Part prepareFilePart(String partName, Uri fileUri) {
 
@@ -333,7 +385,6 @@ public class ExitClearanceFragment extends Fragment {
 
 
     }
-
     public void confirmInput(View v) {
 //        if (!validateReason()) {
 //            return;
@@ -362,7 +413,6 @@ public class ExitClearanceFragment extends Fragment {
         }
 
     }
-
     private void getCheckListItems() {
         if (Utils.isConnected(getActivity())) {
             progressBar.setVisibility(View.VISIBLE);
@@ -419,7 +469,6 @@ public class ExitClearanceFragment extends Fragment {
         }
 
     }
-
     private View.OnClickListener OnCheckListClick(CheckBox checkBox, int pos) {
         return new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
@@ -443,7 +492,6 @@ public class ExitClearanceFragment extends Fragment {
             }
         };
     }
-
     public boolean areAllTrue(ArrayList<Boolean> array) {
 
         for (boolean b : array) {

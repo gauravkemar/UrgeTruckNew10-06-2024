@@ -70,6 +70,7 @@ public class ExitClearanceActivity extends AppCompatActivity  {
         FragmentTransaction fragmentTransaction =getSupportFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.physicalcheckfragment_container,new ScanrfidFragment());
         fragmentTransaction.commit();
+        Log.d("ExitClearance","This is ExitClearance Activity");
     }
 
     private void initToolbar() {

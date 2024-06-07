@@ -55,6 +55,14 @@ public class InvoiceDetail {
         public void setVehicelTransactionId(int vehicelTransactionId) {
             this.vehicelTransactionId = vehicelTransactionId;
         }
+
+    public void updateFields(boolean newIsActive, boolean newIsVerified, String newStatus) {
+        this.isActive = newIsActive;
+        this.isVerified = newIsVerified;
+        this.status = newStatus;
+    }
+
+
  /*   @Override
     public String toString() {
         return "InvoiceDetail{" +

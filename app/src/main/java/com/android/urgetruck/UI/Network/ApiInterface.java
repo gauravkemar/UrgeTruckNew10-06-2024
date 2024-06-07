@@ -18,6 +18,7 @@ import com.android.urgetruck.UI.Models.WeightDetailsResultModel;
 
 
 import com.android.urgetruck.UI.Models.exitclearancenew.ExitClearanceInvoicingResponse;
+import com.android.urgetruck.UI.Models.exitclearancenew.ExitClearanceProductVerificationResponse;
 import com.android.urgetruck.UI.Models.exitclearancenew.ExitInvoiceUpdateListResponse;
 import com.android.urgetruck.UI.Models.exitclearancenew.GeneralResponse;
 import com.android.urgetruck.UI.Models.invoicecheckingstar.GetLoadingDetailOnVehicleDetailResponse;
@@ -122,12 +123,20 @@ public interface ApiInterface {
     Call<GeneralResponse> UpdatePhysicalCheckList(@Body ExitClearanceInvoicingResponse exitClearanceInvoicingResponse);
 
 
+    @GET("GetProductDetailOnVehicleDetail")
+    Call<ExitClearanceProductVerificationResponse> GetExitClearanceProductVerification(@Query("RequestId") int RequestID,
+                                                                                       @Query("VRN") String vrn,
+                                                                                       @Query("RFIDTagNo") String Rfid);
+
+    @POST("UpdateProductDetailOnVehicle")
+    Call<ExitInvoiceUpdateListResponse> UpdateInvoiceDetailOnVehicleDetail(@Body ExitClearanceProductVerificationResponse exitClearanceInvoicingResponse);
+
   //new vehicle detection
 
-    @GET("GetLocationMasterData")
+    @GET("GetLocationList")
     Call<GetLocationListResponse> getVehicleLocationDefaultList(@Query("RequestId") int requestId, @Query("ParentLocationCode") String parentLocationCode);
-  @GET("GetLocationMasterData")
-  Call<GetLocationListResponse> getVehicleLocationList(@Query("RequestId") int RequestID,@Query("ParentLocationCode") int parentLocationCode);
+  @GET("GetLocationList")
+  Call<GetLocationListResponse> getVehicleLocationList(@Query("RequestId") int RequestID,@Query("ParentLocationCode") String parentLocationCode);
 
 
 

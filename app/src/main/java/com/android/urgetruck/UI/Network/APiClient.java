@@ -29,10 +29,10 @@ public class APiClient {
                 .readTimeout(120, TimeUnit.SECONDS)
                 .writeTimeout(120, TimeUnit.SECONDS)
                 .build();
-        if(BASE_URL.equals("192.168.1.107"))
+        if(BASE_URL.equals("192.168.1.235"))
         {
             retrofit = new Retrofit.Builder()
-                    .baseUrl("http://"+BASE_URL+":8001/Ut/api/MobileApp/")
+                    .baseUrl("http://"+BASE_URL+":5000/Ut/api/MobileApp/")
                     .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();

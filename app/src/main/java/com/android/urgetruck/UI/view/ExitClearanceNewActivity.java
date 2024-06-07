@@ -2,8 +2,6 @@ package com.android.urgetruck.UI.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,21 +15,20 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.urgetruck.R;
-import com.android.urgetruck.UI.ExitClearanceListFragment;
 import com.android.urgetruck.UI.Models.exitclearancenew.ExitClearanceInvoicingResponse;
+import com.android.urgetruck.UI.Models.exitclearancenew.ExitClearanceProductVerificationResponse;
 import com.android.urgetruck.UI.Models.exitclearancenew.ExitInvoiceUpdateListResponse;
-import com.android.urgetruck.UI.Models.exitclearancenew.GeneralResponse;
 import com.android.urgetruck.UI.Models.exitclearancenew.InvoiceDetail;
+import com.android.urgetruck.UI.Models.exitclearancenew.ProductDetail;
 import com.android.urgetruck.UI.Utils.Utils;
 import com.android.urgetruck.UI.adapter.ExitClearanceNewAdapter;
+import com.android.urgetruck.UI.adapter.ExitClearanceProductVerificationAdapter;
 import com.android.urgetruck.UI.viemodel.InvoiceCheckingStarViewModel;
 import com.android.urgetruck.databinding.ActivityExitClearanceNewBinding;
 import com.android.urgetruck.databinding.ScanLayoutBinding;
@@ -64,7 +61,6 @@ import com.zebra.rfid.api3.TriggerInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -79,16 +75,16 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
 
     private MediaPlayer mediaPlayer;
     private RadioGroup rgVehicleDetails;
-    private RecyclerView rcExitClearanceInvoiceList,rcPhysicalCheckInvoiceList;
+    private RecyclerView rcExitClearanceInvoiceList;
     String baseurl;
     private Boolean checkstate = true;
     private TextInputEditText tvVrn;
     private InvoiceCheckingStarViewModel invoiceCheckingStarViewModel;
     ActivityExitClearanceNewBinding binding;
     private ExitClearanceNewAdapter exitClearanceNewAdapter;
-     ExitClearanceInvoicingResponse exitClearanceInvoicingResponse;
+    ExitClearanceInvoicingResponse exitClearanceInvoicingResponse;
     ArrayList<InvoiceDetail> invoiceDetailList = new ArrayList<>();
-    ArrayList<InvoiceDetail> submitInvoiceCheckedList = new ArrayList<>();
+    //ArrayList<InvoiceDetail> submitInvoiceCheckedList = new ArrayList<>();
     HashMap<String,Boolean> invoiceHashMapList = new HashMap<String,Boolean>();
     FrameLayout exitClearanceContainer;
     ScanLayoutBinding scanLayoutBinding;
@@ -100,7 +96,13 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
     private boolean isBarcodeInit = false;
     private boolean resumeFlag = false;
     Scanner scanner = null;
+    String singleScannedInvoice="";
 
+    //exitclearance product verification
+    private ExitClearanceProductVerificationAdapter exitClearanceProductAdapter;
+    ExitClearanceProductVerificationResponse exitClearanceProductVerificationResponse;
+    private RecyclerView rcExitClearanceProductVerification;
+    ArrayList<ProductDetail> productDetailList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +129,10 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
         textInputLayout_vehicleno = scanLayoutBinding.textInputLayoutVehicleno;
         rcExitClearanceInvoiceList = binding.rcInvoiceList;
         exitClearanceContainer = binding.exitClearanceContainer;
+
+
+
+
 
         rbVrn = scanLayoutBinding.rbVrn;
         tvVrn = scanLayoutBinding.tvVrn;
@@ -384,13 +390,13 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
     ////exit clearance check
     private void getExitClearanceInvoiceList(String baseUrl, int requestID, String vrn, String Rfid) {
         binding.progressbar.setVisibility(View.VISIBLE);
-        invoiceCheckingStarViewModel.getExitClearanceInvoiceMutableLiveData(baseUrl, requestID, vrn, Rfid).observe(this, new Observer<ExitClearanceInvoicingResponse>() {
+        invoiceCheckingStarViewModel.getExitClearanceInvoiceMutableLiveData(ExitClearanceNewActivity.this,baseUrl, requestID, vrn, Rfid).observe(this, new Observer<ExitClearanceInvoicingResponse>() {
             @Override
             public void onChanged(ExitClearanceInvoicingResponse resultResponse) {
                 binding.progressbar.setVisibility(View.GONE);
-                if(resultResponse!=null)
-                {
-
+                try {
+                    if(resultResponse!=null)
+                    {
                         binding.clInvoiceList.setVisibility(View.VISIBLE);
                         binding.llScan.setVisibility(View.GONE);
                         exitClearanceInvoicingResponse = resultResponse;
@@ -403,7 +409,7 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
                             binding.tableFirstItemInvoiceList.getRoot().setVisibility(View.VISIBLE);
                             binding.rcInvoiceList.setVisibility(View.VISIBLE);
                             invoiceDetailList = (ArrayList<InvoiceDetail>) resultResponse.getInvoiceDetail();
-                            showOnRecyclerView(invoiceDetailList);
+                            showOnRecyclerView();
                             binding.btnSubmit.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -424,34 +430,25 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
                             });
 
                         }
+                    }
+                    else
+                    {
+                        binding.clInvoiceList.setVisibility(View.GONE);
+                        binding.llScan.setVisibility(View.VISIBLE);
+                    }
+                } catch (Exception e) {
+                    Utils.showCustomDialog(ExitClearanceNewActivity.this, "Exception : No Data Found");
                 }
-                else {
-                    binding.clInvoiceList.setVisibility(View.GONE);
-                    binding.llScan.setVisibility(View.VISIBLE);
-
-                }
-
             }
-
         }
-
         );
     }
     private void submitExitClearanceList(ExitClearanceInvoicingResponse response) {
-     /*   try {
-            if (submitInvoiceCheckedList.size() > 0) {
-                submitList(baseurl,  response);
-            } else {
-                Toast.makeText(ExitClearanceNewActivity.this, "Please Check the products!!", Toast.LENGTH_SHORT).show();
-            }
-        } catch (Exception e) {
-
-        }*/
         try {
-            if (submitInvoiceCheckedList.size() > 0) {
+            if (isAllVerified(invoiceDetailList)) {
                 List<String> invoiceNumbersFromResponse = getInvoiceNumbersFromResponse(response);
                 List<String> checkedList = new ArrayList<>();
-                for(InvoiceDetail detail:submitInvoiceCheckedList)
+                for(InvoiceDetail detail:invoiceDetailList)
                 {
                     checkedList.add(detail.getInvoiceNumber());
                 }
@@ -461,7 +458,7 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
                     Toast.makeText(ExitClearanceNewActivity.this, "Please verify the pending products!!", Toast.LENGTH_SHORT).show();
                 }
 
-            } else if(submitInvoiceCheckedList.size() == 0 ){
+            } else if(invoiceDetailList.size() == 0 ){
 
                 submitList(baseurl, response);
             }
@@ -484,34 +481,39 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
         binding.progressbar.setVisibility(View.VISIBLE);
         ExitClearanceInvoicingResponse updateLoadingCompleteMilestoneRequest = new
                 ExitClearanceInvoicingResponse(response.getDriverCode(),
-                response.getDriverName(), response.getErrorMessage(),submitInvoiceCheckedList,response.getJobMilestoneId(),
+                response.getDriverName(), response.getErrorMessage(),invoiceDetailList,response.getJobMilestoneId(),
                 response.getMilestoneCode(),response.getMilestoneStatus(),response.getMilestoneStatus(),response.getStatus(),response.getVehicelTransactionId(),response.getVrn());
-        invoiceCheckingStarViewModel.updateExitClearanceInvoiceMutableLiveData (baseUrl, updateLoadingCompleteMilestoneRequest).observe(this, new Observer<ExitInvoiceUpdateListResponse>() {
+        invoiceCheckingStarViewModel.updateExitClearanceInvoiceMutableLiveData (ExitClearanceNewActivity.this,baseUrl, updateLoadingCompleteMilestoneRequest).observe(this, new Observer<ExitInvoiceUpdateListResponse>() {
             @Override
             public void onChanged(ExitInvoiceUpdateListResponse resultResponse) {
                 binding.progressbar.setVisibility(View.GONE);
-                if(resultResponse!=null)
-                {
-                    if(resultResponse.getStatusCode()==200)
+                try {
+                    if(resultResponse!=null)
                     {
-                        //Toast.makeText(ExitClearanceNewActivity.this,"Submited Succesfuly!",Toast.LENGTH_SHORT).show();
-
-                        if(resultResponse.getNextPage())
+                        if(resultResponse.getStatusCode()==200)
                         {
+                            //Toast.makeText(ExitClearanceNewActivity.this,"Submited Succesfuly!",Toast.LENGTH_SHORT).show();
 
-                        }
-                        else {
-                            Utils.showCustomDialogFinish(ExitClearanceNewActivity.this,"Submited Succesfuly!" );
-                        }
+                            if(resultResponse.getNextPage())
+                            {
+                                getExitClearanceProductList(baseurl,generateRandom(),response.getVrn());
+                            }
+                            else {
+                                Utils.showCustomDialogFinish(ExitClearanceNewActivity.this,"Submited Succesfuly!" );
+                            }
 
-                        //finish();
+                            //finish();
+                        }
+                        else if(resultResponse.getStatusCode()==400 || resultResponse.getStatusCode()==404){
+                            //Toast.makeText(ExitClearanceNewActivity.this,resultResponse.getErrorMessage(),Toast.LENGTH_SHORT).show();
+                            Utils.showCustomDialogFinish(ExitClearanceNewActivity.this,resultResponse.getErrorMessage() );
+                            //finish();
+                        }
                     }
-                   else if(resultResponse.getStatusCode()==400 || resultResponse.getStatusCode()==404){
-                        //Toast.makeText(ExitClearanceNewActivity.this,resultResponse.getErrorMessage(),Toast.LENGTH_SHORT).show();
-                        Utils.showCustomDialogFinish(ExitClearanceNewActivity.this,resultResponse.getErrorMessage() );
-                        //finish();
-                    }
+                } catch (Exception e) {
+                    Utils.showCustomDialog(ExitClearanceNewActivity.this, "Exception : No Data Found");
                 }
+
 
          /*       FragmentManager fragmentManager = getSupportFragmentManager(); // or getFragmentManager() if not using AndroidX
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -536,20 +538,26 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
             }
         });
     }
-    private void showOnRecyclerView(ArrayList<InvoiceDetail> productList) {
+    private boolean isAllVerified(List<InvoiceDetail> invoiceDetailsList) {
+        for (InvoiceDetail detail : invoiceDetailsList) {
+            if (!detail.isVerified()) {
+                return false; // If any item is not verified, return false
+            }
+        }
+        return true; // All items are verified
+    }
+    private void showOnRecyclerView() {
         rcExitClearanceInvoiceList = binding.rcInvoiceList;
-        exitClearanceNewAdapter = new ExitClearanceNewAdapter(this, productList,rcExitClearanceInvoiceList);
+        exitClearanceNewAdapter = new ExitClearanceNewAdapter(this, invoiceDetailList,rcExitClearanceInvoiceList);
         rcExitClearanceInvoiceList.setAdapter(exitClearanceNewAdapter);
         rcExitClearanceInvoiceList.setLayoutManager(new LinearLayoutManager(this));
-        exitClearanceNewAdapter.setOnItemClickListener(new   ExitClearanceNewAdapter.OnItemClickListener() {
+        exitClearanceNewAdapter.setOnItemClickListener( new   ExitClearanceNewAdapter.OnItemClickListener() {
 
             @Override
-            public void onItemClick(InvoiceDetail product) {
-
+            public void onItemClick(int position,InvoiceDetail product) {
                 //submitInvoiceCheckedList.add(product);
                 //Log.d("thisChecked","checked "+submitInvoiceCheckedList.toString());
-
-                ArrayList<String> submitListProd=new ArrayList();
+              /*  ArrayList<String> submitListProd=new ArrayList();
                 for(InvoiceDetail invoiceDetail:submitInvoiceCheckedList)
                 {
                     submitListProd.add(invoiceDetail.getInvoiceNumber());
@@ -564,16 +572,17 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
                     Toast.makeText(ExitClearanceNewActivity.this,"Already Scanned!!",Toast.LENGTH_SHORT).show();
                 }
 
+*/
             }
 
             @Override
             public void onItemUnchecked(InvoiceDetail product) {
-                /*for (ProductX item : productRequestList) {
+             /*   for (ProductX item : productRequestList) {
                    if(item.equals(product.getProducttransactioncode()))
                    {
                        productRequestList.remove()
                    }
-                }*/
+                }
                 //Log.d("thisChecked","unchecked"+submitInvoiceCheckedList.toString() );
                 Iterator<InvoiceDetail> iterator = submitInvoiceCheckedList.iterator();
                 while (iterator.hasNext()) {
@@ -581,12 +590,15 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
                     if (item.getInvoiceNumber().equals(product.getInvoiceNumber())) {
                         iterator.remove();
                     }
-                }
+                }*/
             }
 
             @Override
-            public void onVerifyBarcodeClick(int position) {
-                scanBarcode();
+            public void onVerifyBarcodeClick(String invoiceNo, int position) {
+                if (android.os.Build.MANUFACTURER.contains("Zebra Technologies") || android.os.Build.MANUFACTURER.contains("Motorola Solutions")) {
+                    scanBarcode();
+                    singleScannedInvoice=invoiceNo;
+                }
             }
         });
     }
@@ -640,6 +652,9 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
             }
         }
     }
+
+
+
     //////physical check
     private void updateStatus(final String status) {
 
@@ -653,6 +668,7 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
         });
 
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -662,6 +678,19 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
         if (isBarcodeInit) {
             deInitScanner();
         }
+        if (emdkManager != null) {
+            emdkManager.release();
+            emdkManager = null;
+        }
+        try {
+            if (reader != null) {
+                reader = null;
+                readers.Dispose();
+                readers = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -670,11 +699,20 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
         if (isBarcodeInit) {
             deInitScanner();
         }
+        if (reader != null) {
+            try {
+                reader.disconnect();
+                reader = null;
+            } catch (InvalidUsageException e) {
+                e.printStackTrace();
+            } catch (OperationFailureException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
     private void initBarcode() {
         isBarcodeInit = true;
-
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -715,6 +753,9 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
                 initScanner();
             }
         }
+        if (reader == null) {
+            connectReader();
+        }
     }
     private void initBarcodeManager() {
         barcodeManager = (BarcodeManager) emdkManager.getInstance(EMDKManager.FEATURE_TYPE.BARCODE);
@@ -730,8 +771,41 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
     }
     @Override
     public void onData(ScanDataCollection scanDataCollection) {
+        String dataStr = "";
 
-        runOnUiThread(new Runnable() {
+        if ((scanDataCollection != null) && (scanDataCollection.getResult() == ScannerResults.SUCCESS)) {
+            mediaPlayer.start();
+            ArrayList<ScanDataCollection.ScanData> scanData = scanDataCollection.getScanData();
+            // Iterate through scanned data and prepare the data.
+            for (ScanDataCollection.ScanData data : scanData) {
+                // Get the scanned data
+                String barcodeData = data.getData();
+                // Get the type of label being scanned
+                ScanDataCollection.LabelType labelType = data.getLabelType();
+                // Concatenate barcode data and label type
+                dataStr = barcodeData;
+            }
+            String finalDataStr = dataStr;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //exitClearanceNewAdapter.markCheckboxByTag(finalDataStr);
+             /*       for (int i = 0; i < invoiceDetailList.size(); i++) {
+                        if (invoiceDetailList.get(i).getInvoiceNumber().equals(finalDataStr)) {
+                            invoiceDetailList.get(i).updateFields(false, true, "Pending");
+                            exitClearanceNewAdapter.notifyItemChanged(i);
+                            break;
+                        }
+                    }*/
+                    defaultBarcodeScanned(finalDataStr);
+
+                   // exitClearanceNewAdapter.notifyItemChanged(invoiceDetailList.size()-1);
+               }
+            });
+        }
+
+
+   /*     runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 String dataStr = "";
@@ -743,20 +817,104 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
                         dataStr = barcodeData;
                     }
                     exitClearanceNewAdapter.markCheckboxByTag(dataStr);
-                    exitClearanceNewAdapter.notifyDataSetChanged();
+                    exitClearanceNewAdapter.notifyItemChanged(invoiceDetailList.size()-1);
+                    //exitClearanceNewAdapter.notifyDataSetChanged();
 
-
-       /*     runOnUiThread(() -> binding.tvBarcode.setText(dataStr));
+       *//*     runOnUiThread(() -> binding.tvBarcode.setText(dataStr));
             // checkVehicleInsideGeofenceBarcode(dataStr.toString());
             if (dataStr != null) {
                 getVehicleStatusBarcode(dataStr);
-            }*/
+            }*//*
                     Log.e(TAG, "Barcode Data : " + dataStr);
                 }
             }
-        });
+        });*/
     }
 
+    private void defaultBarcodeScanned(String finalDataStr)
+    {
+
+        if(binding.clInvoiceList.getVisibility()==View.VISIBLE)
+        {
+            if (!singleScannedInvoice.isEmpty()) {
+                verifyInvoice(singleScannedInvoice,finalDataStr);
+                singleScannedInvoice = ""; // Clear singleScannedInvoice after verifying
+            } else {
+                for (int i = 0; i < invoiceDetailList.size(); i++) {
+                    if (invoiceDetailList.get(i).getInvoiceNumber().equals(finalDataStr)) {
+                        if (!invoiceDetailList.get(i).isVerified()) { // Check if the item is not already verified
+                            invoiceDetailList.get(i).updateFields(false, true, "Pending");
+                            exitClearanceNewAdapter.notifyItemChanged(i);
+                        } else {
+                            // Handle the case where the item is already verified
+                            // You can show a toast message or perform any other action here
+                            Toast.makeText(ExitClearanceNewActivity.this, "This item is already verified!", Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                    }
+                }
+            }
+
+        }
+        else if( binding.clProductVerification.getVisibility()==View.VISIBLE){
+            if (!singleScannedInvoice.isEmpty()) {
+                verifyBatchNo(singleScannedInvoice,finalDataStr);
+                singleScannedInvoice = ""; // Clear singleScannedInvoice after verifying
+            } else {
+                for (int i = 0; i < productDetailList.size(); i++) {
+                    if (productDetailList.get(i).getBatchNumber().equals(finalDataStr.replaceFirst("^0+", ""))) {
+                        if (!productDetailList.get(i).isVerified) { // Check if the item is not already verified
+                            productDetailList.get(i).updateFields( true);
+                            exitClearanceProductAdapter.notifyItemChanged(i);
+                        } else {
+                            // Handle the case where the item is already verified
+                            // You can show a toast message or perform any other action here
+                            Toast.makeText(ExitClearanceNewActivity.this, "This item is already verified!", Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+
+
+
+        /*singleScannedInvoice
+        for (int i = 0; i < invoiceDetailList.size(); i++) {
+            if (invoiceDetailList.get(i).getInvoiceNumber().equals(finalDataStr)) {
+                if (!invoiceDetailList.get(i).isVerified()) { // Check if the item is not already verified
+                    invoiceDetailList.get(i).updateFields(false, true, "Pending");
+                    exitClearanceNewAdapter.notifyItemChanged(i);
+                } else {
+                    // Handle the case where the item is already verified
+                    // You can show a toast message or perform any other action here
+                    Toast.makeText(ExitClearanceNewActivity.this, "This item is already verified!", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+        }*/
+    }
+    private void verifyInvoice(String invoiceNumber, String finalDataStr) {
+        if (invoiceNumber.toLowerCase().equals(finalDataStr.toLowerCase())) {
+            for (int i = 0; i < invoiceDetailList.size(); i++) {
+                if (invoiceDetailList.get(i).getInvoiceNumber().equals(invoiceNumber)) {
+                    if (!invoiceDetailList.get(i).isVerified()) { // Check if the item is not already verified
+                        invoiceDetailList.get(i).updateFields(false, true, "Pending");
+                        exitClearanceNewAdapter.notifyItemChanged(i);
+                    } else {
+                        // Handle the case where the item is already verified
+                        // You can show a toast message or perform any other action here
+                        Toast.makeText(ExitClearanceNewActivity.this, "This item is already verified!", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                }
+            }
+        } else {
+            // Notify user that invoiceNumber does not match finalDataStr
+            Toast.makeText(ExitClearanceNewActivity.this, "Scanned invoice does not match!", Toast.LENGTH_SHORT).show();
+        }
+    }
     @Override
     public void onStatus(StatusData statusData) {
         StatusData.ScannerStates state = statusData.getState();
@@ -834,4 +992,184 @@ public class ExitClearanceNewActivity extends AppCompatActivity implements RfidE
             scanner = null;
         }
     }
+
+
+    ////product verification
+    ////exit clearance check
+    private void getExitClearanceProductList(String baseUrl, int requestID, String vrn) {
+        binding.progressbar.setVisibility(View.VISIBLE);
+        invoiceCheckingStarViewModel.getExitClearanceProductVerification(ExitClearanceNewActivity.this,baseUrl, requestID, vrn,"").observe(this, new Observer<ExitClearanceProductVerificationResponse>() {
+            @Override
+                    public void onChanged(ExitClearanceProductVerificationResponse resultResponse) {
+                        binding.progressbar.setVisibility(View.GONE);
+                        try {
+                            if(resultResponse!=null)
+                            {
+                                binding.clInvoiceList.setVisibility(View.GONE);
+                                binding.rcInvoiceList.setVisibility(View.GONE);
+                                binding.clProductVerification.setVisibility(View.VISIBLE);
+                                exitClearanceProductVerificationResponse = resultResponse;
+                                int getVehicleTransactionId = resultResponse.getVehicelTransactionId();
+                                String getVRNValue=resultResponse.getVrn();
+                                binding.tvProdVRNValue.setText(getVRNValue);
+                                binding.tvProdTransactionIdValue.setText(String.valueOf(getVehicleTransactionId));
+                                if(resultResponse.getProductDetail().size() > 0 )
+                                {
+                                    binding.tableFirstItemProductList.getRoot().setVisibility(View.VISIBLE);
+                                    productDetailList = (ArrayList<ProductDetail>) resultResponse.getProductDetail();
+                                    showOnProductListRecyclerView();
+                                    binding.btnProdSubmit.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            submitExitClearanceProductList(resultResponse);
+                                        }
+                                    });
+
+                                }
+                                else {
+                                    binding.tableFirstItemInvoiceList.getRoot().setVisibility(View.GONE);
+                                    binding.rcInvoiceList.setVisibility(View.GONE);
+                                    binding.tvNoInvoiceFound.setVisibility(View.VISIBLE);
+                                    binding.btnProdSubmit.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            submitExitClearanceProductList(resultResponse);
+                                        }
+                                    });
+
+                                }
+                            }
+                            else
+                            {
+                                binding.clInvoiceList.setVisibility(View.GONE);
+                                binding.llScan.setVisibility(View.VISIBLE);
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(ExitClearanceNewActivity.this, "Exception : No Data Found");
+                        }
+                    }
+                }
+        );
+    }
+    private void submitExitClearanceProductList(ExitClearanceProductVerificationResponse response) {
+        try {
+            if (isAllProductVerified(productDetailList)) {
+                List<String> invoiceNumbersFromResponse = getInvoiceNumbersFromResponse(response);
+                List<String> checkedList = new ArrayList<>();
+                for(ProductDetail detail:productDetailList)
+                {
+                    checkedList.add(detail.getBatchNumber());
+                }
+                if (checkedList.containsAll(invoiceNumbersFromResponse)) {
+                    submitProductList(baseurl, response);
+                } else {
+                    Toast.makeText(ExitClearanceNewActivity.this, "Please verify the pending products!!", Toast.LENGTH_SHORT).show();
+                }
+
+            } else if(invoiceDetailList.size() == 0 ){
+
+                submitProductList(baseurl, response);
+            }
+            else {
+                Toast.makeText(ExitClearanceNewActivity.this, "Please verify the pending products!!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+
+        }
+    }
+    private List<String> getInvoiceNumbersFromResponse(ExitClearanceProductVerificationResponse response) {
+        List<String> batchNo = new ArrayList<>();
+        List<ProductDetail> invoiceDetails = response.getProductDetail();
+        for (ProductDetail detail : invoiceDetails) {
+            batchNo.add(detail.getBatchNumber());
+        }
+        return batchNo;
+    }
+    private void submitProductList(String baseUrl,  ExitClearanceProductVerificationResponse response) {
+        binding.progressbar.setVisibility(View.VISIBLE);
+        ExitClearanceProductVerificationResponse updateLoadingCompleteMilestoneRequest = new
+                ExitClearanceProductVerificationResponse(response.getDriverCode(),
+                response.getDriverName(), response.getErrorMessage(),productDetailList,response.getJobMilestoneId(),
+                response.getMilestoneCode(),response.getMilestoneStatus(),response.getMilestoneStatus(),response.getStatus(),response.getVehicelTransactionId(),response.getVrn());
+        invoiceCheckingStarViewModel.updateProductDetailOnVehicleDetailMutableLiveData (
+                ExitClearanceNewActivity.this,baseUrl,
+                updateLoadingCompleteMilestoneRequest).observe(
+                        this, new Observer<ExitInvoiceUpdateListResponse>() {
+            @Override
+            public void onChanged(ExitInvoiceUpdateListResponse resultResponse) {
+                binding.progressbar.setVisibility(View.GONE);
+                try {
+                    if(resultResponse!=null)
+                    {
+                        if(resultResponse.getStatusCode()==200)
+                        {
+                            //Toast.makeText(ExitClearanceNewActivity.this,"Submited Succesfuly!",Toast.LENGTH_SHORT).show();
+
+                            if(resultResponse.getNextPage())
+                            {
+
+                            }
+                            else {
+                                Utils.showCustomDialogFinish(ExitClearanceNewActivity.this,"Submited Succesfuly!" );
+                            }
+
+                            //finish();
+                        }
+                        else if(resultResponse.getStatusCode()==400 || resultResponse.getStatusCode()==404){
+                            //Toast.makeText(ExitClearanceNewActivity.this,resultResponse.getErrorMessage(),Toast.LENGTH_SHORT).show();
+                            Utils.showCustomDialogFinish(ExitClearanceNewActivity.this,resultResponse.getErrorMessage() );
+                            //finish();
+                        }
+                    }
+                } catch (Exception e) {
+                    Utils.showCustomDialog(ExitClearanceNewActivity.this, "Exception : No Data Found");
+                }
+            }
+        });
+    }
+    private boolean isAllProductVerified(List<ProductDetail> invoiceDetailsList) {
+        for (ProductDetail detail : invoiceDetailsList) {
+            if (!detail.isVerified) {
+                return false; // If any item is not verified, return false
+            }
+        }
+        return true; // All items are verified
+    }
+
+    private void verifyBatchNo(String batchNo, String finalDataStr) {
+        if (batchNo.toLowerCase().equals(finalDataStr.replaceFirst("^0+", "").toLowerCase())) {
+            for (int i = 0; i < productDetailList.size(); i++) {
+                if (productDetailList.get(i).getBatchNumber().equals(batchNo)) {
+                    if (!productDetailList.get(i).isVerified) { // Check if the item is not already verified
+                        productDetailList.get(i).updateFields(true);
+                        exitClearanceProductAdapter.notifyItemChanged(i);
+                    } else {
+                        // Handle the case where the item is already verified
+                        // You can show a toast message or perform any other action here
+                        Toast.makeText(ExitClearanceNewActivity.this, "This item is already verified!", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                }
+            }
+        } else {
+            // Notify user that invoiceNumber does not match finalDataStr
+            Toast.makeText(ExitClearanceNewActivity.this, "Scanned invoice does not match!", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void showOnProductListRecyclerView() {
+        rcExitClearanceProductVerification = binding.rcProdList;
+        exitClearanceProductAdapter = new ExitClearanceProductVerificationAdapter(this, productDetailList,rcExitClearanceProductVerification);
+        rcExitClearanceProductVerification.setAdapter(exitClearanceProductAdapter);
+        rcExitClearanceProductVerification.setLayoutManager(new LinearLayoutManager(this));
+        exitClearanceProductAdapter.setOnItemClickListener( new   ExitClearanceProductVerificationAdapter.OnItemClickListener() {
+            @Override
+            public void onVerifyBarcodeClick(String batchNo, int position) {
+                if (android.os.Build.MANUFACTURER.contains("Zebra Technologies") || android.os.Build.MANUFACTURER.contains("Motorola Solutions")) {
+                    scanBarcode();
+                    singleScannedInvoice=batchNo;
+                }
+            }
+        });
+    }
+
 }

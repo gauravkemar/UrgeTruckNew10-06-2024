@@ -414,59 +414,86 @@ public class ExitClearancePhysicalCheckListFragment extends Fragment {
 
     }
     private void getCheckListItems() {
-        if (Utils.isConnected(getActivity())) {
-            progressBar.setVisibility(View.VISIBLE);
-            String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
-            Call<GetCheckListItemsModel> call = apiService.getCheckListItems(123456789);
-            call.enqueue(new Callback<GetCheckListItemsModel>() {
-                @Override
-                public void onResponse(Call<GetCheckListItemsModel> call, Response<GetCheckListItemsModel> response) {
+        try{
 
-                    progressBar.setVisibility(View.GONE);
+            if (Utils.isConnected(getActivity())) {
+                progressBar.setVisibility(View.VISIBLE);
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                Call<GetCheckListItemsModel> call = apiService.getCheckListItems(123456789);
+                call.enqueue(new Callback<GetCheckListItemsModel>() {
+                    @Override
+                    public void onResponse(Call<GetCheckListItemsModel> call, Response<GetCheckListItemsModel> response) {
 
-                    existCheck = response.body().getExistCheckList();
-                    mandatoryItems = new HashMap<>();
 
-                    ArrayList<String> CheckListDataArray = new ArrayList<>();
-                    for (int i = 0; i < existCheck.size(); i++) {
-                        if (existCheck.get(i).getIsMandatory()) {
-                            mandatoryItems.put(i, false);
-                            mandatoryItemsValue = mandatoryItemsValue + existCheck.get(i).getChecklistItem() + ".\n";
+
+                        progressBar.setVisibility(View.GONE);
+
+                        try {
+                            existCheck = response.body().getExistCheckList();
+                            mandatoryItems = new HashMap<>();
+
+                            ArrayList<String> CheckListDataArray = new ArrayList<>();
+                            for (int i = 0; i < existCheck.size(); i++) {
+                                if (existCheck.get(i).getIsMandatory()) {
+                                    mandatoryItems.put(i, false);
+                                    mandatoryItemsValue = mandatoryItemsValue + existCheck.get(i).getChecklistItem() + ".\n";
+                                }
+                                CheckListDataArray.add(existCheck.get(i).getChecklistItem());
+                                CheckBox checkBox = new CheckBox(getActivity());
+                                if (existCheck.get(i).getIsMandatory()) {
+                                    checkBox.setText(existCheck.get(i).getChecklistItem() + " **");
+                                } else {
+                                    checkBox.setText(existCheck.get(i).getChecklistItem());
+                                }
+                                checkBox.setOnClickListener(OnCheckListClick(checkBox, i));
+                                linearLayout.addView(checkBox);
+
+                            }
+                            for (ExistCheck check : existCheck) {
+                            }
+                            Log.e("response", response.body().toString());
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
-                        CheckListDataArray.add(existCheck.get(i).getChecklistItem());
-                        CheckBox checkBox = new CheckBox(getActivity());
-                        if (existCheck.get(i).getIsMandatory()) {
-                            checkBox.setText(existCheck.get(i).getChecklistItem() + " **");
-                        } else {
-                            checkBox.setText(existCheck.get(i).getChecklistItem());
+
+
+
+
+                    }
+                    @Override
+                    public void onFailure(Call<GetCheckListItemsModel> call, Throwable t) {
+                        Log.d("TAG", "Response = " + t.toString());
+                        progressBar.setVisibility(View.GONE);
+                        try {
+                            //Utils.showCustomDialogFinish(getActivity(), t.toString());
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(),t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
-                        checkBox.setOnClickListener(OnCheckListClick(checkBox, i));
-                        linearLayout.addView(checkBox);
+
+
 
                     }
-                    for (ExistCheck check : existCheck) {
-                    }
-                    Log.e("response", response.body().toString());
-                }
-                @Override
-                public void onFailure(Call<GetCheckListItemsModel> call, Throwable t) {
-                    Log.d("TAG", "Response = " + t.toString());
-                    progressBar.setVisibility(View.GONE);
-                    //Utils.showCustomDialogFinish(getActivity(), t.toString());
-                    if (t instanceof SocketTimeoutException) {
-                        // Handle timeout exception with custom message
-                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                    } else {
-                        // Handle other exceptions
-                        Utils.showCustomDialog(getActivity(),t.toString());
-                    }
-                }
-            });
 
-        } else {
-            Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+
+                });
+
+            } else {
+                Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            }
         }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog(getActivity(), e.getMessage());
+        }
+
 
     }
     private View.OnClickListener OnCheckListClick(CheckBox checkBox, int pos) {

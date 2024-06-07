@@ -58,19 +58,19 @@ import retrofit2.Response;
 
 public class VehicleDetectionActivity extends AppCompatActivity implements RfidEventsListener {
 
-    private  Readers readers;
+    private Readers readers;
     private RFIDReader reader;
     private List<String> TagDataSet;
     private ProgressBar progressBar;
     private AutoCompleteTextView autoCompleteTextView_reason;
     private AutoCompleteTextView autoCompleteTextView_location;
-    private TextInputLayout textInputLayoutreasons,textInputLayoutlocation;
+    private TextInputLayout textInputLayoutreasons, textInputLayoutlocation;
     private String location, reason;
     List<Location> locations;
     private AutoCompleteTextView tvRfid;
-    private TextInputLayout tv_rfid,textInputLayout_vehicleno;
+    private TextInputLayout tv_rfid, textInputLayout_vehicleno;
     private RadioGroup rgVehicleDetails;
-    private RadioButton rbScanRfid,rbVrn;
+    private RadioButton rbScanRfid, rbVrn;
     private TextInputEditText tvVrn;
     private Boolean checkstate = true;
     View layout_toolbar;
@@ -93,8 +93,8 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         autoCompleteTextView_reason = findViewById(R.id.autoCompleteTextView_reason);
         textInputLayoutlocation = findViewById(R.id.textInputLayoutlocation);
         textInputLayoutreasons = findViewById(R.id.textInputLayoutreasons);
-         tvRfid = findViewById(R.id.autoCompleteTextView_rfid);
-         tv_rfid = findViewById(R.id.tv_rfid);
+        tvRfid = findViewById(R.id.autoCompleteTextView_rfid);
+        tv_rfid = findViewById(R.id.tv_rfid);
         textInputLayout_vehicleno = findViewById(R.id.textInputLayout_vehicleno);
         rgVehicleDetails = findViewById(R.id.rgVehicleDetails);
         rbScanRfid = findViewById(R.id.rbScanRfid);
@@ -131,15 +131,15 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         rgVehicleDetails.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if(radioGroup.getCheckedRadioButtonId()==R.id.rbScanRfid){
+                if (radioGroup.getCheckedRadioButtonId() == R.id.rbScanRfid) {
 
                     textInputLayout_vehicleno.setVisibility(View.GONE);
                     tvVrn.setText("");
                     tv_rfid.setError("");
                     tv_rfid.setVisibility(View.VISIBLE);
-                    checkstate= true;
+                    checkstate = true;
 
-                }else if(radioGroup.getCheckedRadioButtonId()==R.id.rbVrn){
+                } else if (radioGroup.getCheckedRadioButtonId() == R.id.rbVrn) {
                     textInputLayout_vehicleno.setError("");
                     textInputLayout_vehicleno.setVisibility(View.VISIBLE);
                     tvRfid.setText("");
@@ -156,127 +156,168 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         toolbarText = layout_toolbar.findViewById(R.id.toolbarText);
         toolbarText.setText(getString(R.string.vehicle_detection_activity));
 
-        ImageView ivLogo =layout_toolbar.findViewById(R.id.ivLogoLeftToolbar);
+        ImageView ivLogo = layout_toolbar.findViewById(R.id.ivLogoLeftToolbar);
         ivLogo.setVisibility(View.VISIBLE);
         ivLogo.setImageResource(R.drawable.ut_logo_with_outline);
         ivLogo.setOnClickListener(view -> {
-            startActivity(new Intent(VehicleDetectionActivity.this,HomeActivity.class));
+            startActivity(new Intent(VehicleDetectionActivity.this, HomeActivity.class));
             finishAffinity();
         });
     }
 
     private void callPostRfidApi() {
         progressBar.setVisibility(View.VISIBLE);
+        try {
+            if (Utils.isConnected(this))
+            {
+                String baseurl = Utils.getSharedPreferences(VehicleDetectionActivity.this, "apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
 
-        String baseurl= Utils.getSharedPreferences(VehicleDetectionActivity.this,"apiurl");
-        ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                PostRfidModel modal;
 
-        PostRfidModel modal;
+                if (checkstate) {
+                    modal = new PostRfidModel("123456", tvRfid.getText().toString().trim(), location, "", autoCompleteTextView_reason.getText().toString().trim());
 
-        if(checkstate){
-            modal =new PostRfidModel("123456",tvRfid.getText().toString().trim(),location,"",autoCompleteTextView_reason.getText().toString().trim());
+                }
+                else {
+                    modal = new PostRfidModel("123456", "", location, tvVrn.getText().toString().trim(), autoCompleteTextView_reason.getText().toString().trim());
+                }
 
-        }else{
-            modal = new PostRfidModel("123456","",location,tvVrn.getText().toString().trim(),autoCompleteTextView_reason.getText().toString().trim());
+
+                Log.e("Request", new Gson().toJson(modal));
+
+                Call<PostRfidResultModel> call = apiService.PostRfid(modal);
+
+                call.enqueue(new Callback<PostRfidResultModel>() {
+                    @Override
+                    public void onResponse(Call<PostRfidResultModel> call, Response<PostRfidResultModel> response) {
+                        progressBar.setVisibility(View.GONE);
+
+                        try {
+                            if (response.isSuccessful()) {
+                                if (response.body().getStatusMessage() != null) {
+                                    Utils.showCustomDialogFinish(VehicleDetectionActivity.this, response.body().getStatusMessage());
+                                } else {
+                                    Utils.showCustomDialogFinish(VehicleDetectionActivity.this, "Success");
+                                    // finish();
+                                }
+
+                            } else {
+
+                                PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
+                                Log.e("msg", message.getStatusMessage());
+                                Utils.showCustomDialog(VehicleDetectionActivity.this, message.getStatusMessage());
+
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(VehicleDetectionActivity.this, "Exception : No Data Found");
+                        }
+
+
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<PostRfidResultModel> call, Throwable t) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.e("error", t.toString());
+                        // Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(VehicleDetectionActivity.this, "Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(VehicleDetectionActivity.this, t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(VehicleDetectionActivity.this, "Exception : No Data Found");
+                        }
+
+                    }
+                });
+            }
+            else {
+                Utils.showCustomDialogFinish(this, getString(R.string.internet_connection));
+            }
+        }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog(this, e.getMessage());
         }
 
 
-        Log.e("Request",new Gson().toJson(modal));
+    }
 
-        Call<PostRfidResultModel> call = apiService.PostRfid(modal);
-
-        call.enqueue(new Callback<PostRfidResultModel>() {
-            @Override
-            public void onResponse(Call<PostRfidResultModel> call, Response<PostRfidResultModel> response) {
-                progressBar.setVisibility(View.GONE);
-                if(response.isSuccessful())
-                {
-                    if(response.body().getStatusMessage()!=null) {
-                        Utils.showCustomDialogFinish(VehicleDetectionActivity.this, response.body().getStatusMessage());
-                    }else{
-                        Utils.showCustomDialogFinish(VehicleDetectionActivity.this, "Success");
-                       // finish();
-                    }
-
-                }else{
-
-                    PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                    Log.e("msg",message.getStatusMessage());
-                    Utils.showCustomDialog(VehicleDetectionActivity.this,message.getStatusMessage());
-
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<PostRfidResultModel> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Log.e("error",t.toString());
-               // Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
-
-                if (t instanceof SocketTimeoutException) {
-                    // Handle timeout exception with custom message
-                    Utils.showCustomDialog(VehicleDetectionActivity.this,"Network error,\n Please check Network!!");
-                } else {
-                    // Handle other exceptions
-                    Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
-                }
-            }
-        });
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (reader == null) {
+            connectReader();
+        }
     }
 
     private void getLocationData() {
-        try{
-            if(Utils.isConnected(this)){
+        try {
+            if (Utils.isConnected(this)) {
                 findViewById(R.id.progressbar).setVisibility(View.VISIBLE);
-                String baseurl= Utils.getSharedPreferences(VehicleDetectionActivity.this,"apiurl");
+                String baseurl = Utils.getSharedPreferences(VehicleDetectionActivity.this, "apiurl");
                 ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
                 Call<LocationModel> call = apiService.getLocations(123456789);
                 call.enqueue(new Callback<LocationModel>() {
                     @Override
                     public void onResponse(Call<LocationModel> call, Response<LocationModel> response) {
-                        LocationModel locationModel = response.body();
-                        locations = locationModel.getLocations();
-                        ArrayList<String> locationDataArray = new ArrayList<>();
-                        for( Location location : locations){
-                            locationDataArray.add(location.getDeviceName());
 
+                        try {
+                            LocationModel locationModel = response.body();
+                            locations = locationModel.getLocations();
+                            ArrayList<String> locationDataArray = new ArrayList<>();
+                            for (Location location : locations) {
+                                locationDataArray.add(location.getDeviceName());
+
+                            }
+                            populateDropdown(locationDataArray);
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(VehicleDetectionActivity.this, "Exception : No Data Found");
                         }
-                        populateDropdown(locationDataArray);
+
+
                         findViewById(R.id.progressbar).setVisibility(View.GONE);
 
                     }
 
                     @Override
                     public void onFailure(Call<LocationModel> call, Throwable t) {
-                        Log.d("TAG","Response = "+t.toString());
+                        Log.d("TAG", "Response = " + t.toString());
                         findViewById(R.id.progressbar).setVisibility(View.GONE);
-                       // Utils.showCustomDialogFinish(VehicleDetectionActivity.this,t.toString());
-
-                        if (t instanceof SocketTimeoutException) {
-                            // Handle timeout exception with custom message
-                            Utils.showCustomDialog(VehicleDetectionActivity.this,"Network error,\n Please check Network!!");
-                        } else {
-                            // Handle other exceptions
-                            Utils.showCustomDialog(VehicleDetectionActivity.this,t.toString());
+                        // Utils.showCustomDialogFinish(VehicleDetectionActivity.this,t.toString());
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(VehicleDetectionActivity.this, "Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(VehicleDetectionActivity.this, t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(VehicleDetectionActivity.this, "Exception : No Data Found");
                         }
+
 
                     }
                 });
 
-            }else{
-                Utils.showCustomDialogFinish(this,getString(R.string.internet_connection));
+            } else {
+                Utils.showCustomDialogFinish(this, getString(R.string.internet_connection));
             }
-        }
-        catch (Exception e)
-        {
-            Utils.showCustomDialogFinish(this,e.getMessage());
+        } catch (Exception e) {
+            Utils.showCustomDialogFinish(this, e.getMessage());
         }
 
 
     }
 
-    public void populateDropdown(ArrayList<String> locationDataArray){
+    public void populateDropdown(ArrayList<String> locationDataArray) {
 
         ArrayAdapter<String> adapter;
         adapter =
@@ -309,12 +350,12 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
 
             TagData detectedTag = rfidReadEvents.getReadEventData().tagData;
             mediaPlayer.start();
-            if(detectedTag != null){
+            if (detectedTag != null) {
                 reader.Actions.Inventory.stop();
 
                 String tagID = detectedTag.getTagID();
 
-                if(!TagDataSet.contains(tagID))
+                if (!TagDataSet.contains(tagID))
                     TagDataSet.add(tagID);
 
                 ArrayAdapter<String> adapter1 =
@@ -324,24 +365,23 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
                                 TagDataSet);
 
 
-
                 Spinner spinner = findViewById(R.id.spinner);
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
 
-                        if(TagDataSet.size()==1){
+                        if (TagDataSet.size() == 1) {
                             tvRfid.setText(adapter1.getItem(0).toString(), false);
 
-                        }else{
+                        } else {
                             tvRfid.setText("");
                             tv_rfid.setError("Select the RFID value from dropdown");
                         }
 
-                   tvRfid.setAdapter(adapter1);
-                  // editTextFilledExposedDropdown3.setText(adapter1.getItem(0));
-                       // editTextFilledExposedDropdown3.isPopupShowing();
+                        tvRfid.setAdapter(adapter1);
+                        // editTextFilledExposedDropdown3.setText(adapter1.getItem(0));
+                        // editTextFilledExposedDropdown3.isPopupShowing();
                         spinner.setAdapter(adapter1);
 
 //                        for (String i : TagDataSet) {
@@ -352,7 +392,6 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
 
                     }
                 });
-
 
 
             }
@@ -367,9 +406,9 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
     @Override
     public void eventStatusNotify(RfidStatusEvents rfidStatusEvents) {
         try {
-            if(rfidStatusEvents.StatusEventData.getStatusEventType() == STATUS_EVENT_TYPE.HANDHELD_TRIGGER_EVENT){
+            if (rfidStatusEvents.StatusEventData.getStatusEventType() == STATUS_EVENT_TYPE.HANDHELD_TRIGGER_EVENT) {
 
-                if(rfidStatusEvents.StatusEventData.HandheldTriggerEventData.getHandheldEvent() == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_PRESSED){
+                if (rfidStatusEvents.StatusEventData.HandheldTriggerEventData.getHandheldEvent() == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_PRESSED) {
 
                     runOnUiThread(new Runnable() {
                         @Override
@@ -382,7 +421,7 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
                     // start scanning
 
                     reader.Actions.Inventory.perform();
-                }else if(rfidStatusEvents.StatusEventData.HandheldTriggerEventData.getHandheldEvent() == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_RELEASED){
+                } else if (rfidStatusEvents.StatusEventData.HandheldTriggerEventData.getHandheldEvent() == HANDHELD_TRIGGER_EVENT_TYPE.HANDHELD_TRIGGER_RELEASED) {
                     reader.Actions.Inventory.stop();
                 }
             }
@@ -393,19 +432,20 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         }
 
     }
+
     private void connectReader() {
 
         try {
             readers = new Readers(this, ENUM_TRANSPORT.SERVICE_SERIAL);
             ArrayList<ReaderDevice> readerDevices = readers.GetAvailableRFIDReaderList();
 
-            if(!readerDevices.isEmpty()){
+            if (!readerDevices.isEmpty()) {
                 reader = readerDevices.get(0).getRFIDReader();
                 reader.connect();
                 Antennas.AntennaRfConfig antennaRfConfig = reader.Config.Antennas.getAntennaRfConfig(1);
                 antennaRfConfig.setrfModeTableIndex(0);
                 antennaRfConfig.setTari(0);
-                antennaRfConfig.setTransmitPowerIndex(Integer.parseInt(Utils.getSharedPreferences(VehicleDetectionActivity.this,"antennapower")));
+                antennaRfConfig.setTransmitPowerIndex(Integer.parseInt(Utils.getSharedPreferences(VehicleDetectionActivity.this, "antennapower")));
                 // set the configuration
                 reader.Config.Antennas.setAntennaRfConfig(1, antennaRfConfig);
                 reader.Events.addEventsListener(this);
@@ -426,19 +466,21 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
 
 
             }
-        }catch (InvalidUsageException e){
+        } catch (InvalidUsageException e) {
             e.printStackTrace();
-        }catch (OperationFailureException e){
+        } catch (OperationFailureException e) {
             e.printStackTrace();
-            Toast.makeText(this,"error connecting to scanner",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "error connecting to scanner", Toast.LENGTH_LONG).show();
         }
     }
+
     @Override
     protected void onPause() {
         super.onPause();
         if (reader != null) {
             try {
                 reader.disconnect();
+                reader = null;
             } catch (InvalidUsageException e) {
                 e.printStackTrace();
             } catch (OperationFailureException e) {
@@ -447,43 +489,43 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         }
     }
 
-    private boolean validateReason(){
+    private boolean validateReason() {
         String reasonInput = textInputLayoutreasons.getEditText().getText().toString().trim();
 
         if (reasonInput.isEmpty()) {
             textInputLayoutreasons.setError("Please Select a reason");
             return false;
-        }
-        else {
+        } else {
             textInputLayoutreasons.setError(null);
             return true;
         }
     }
-    private boolean validateLocation(){
+
+    private boolean validateLocation() {
         String locationInput = textInputLayoutlocation.getEditText().getText().toString().trim();
 
         if (locationInput.isEmpty()) {
             textInputLayoutlocation.setError("Please Select a location");
             return false;
-        }
-        else {
+        } else {
             textInputLayoutlocation.setError(null);
             return true;
         }
     }
-    private boolean validateRFIDorVRN(){
+
+    private boolean validateRFIDorVRN() {
         String scanRFIDInput = tv_rfid.getEditText().getText().toString().trim();
         String vrnInput = textInputLayout_vehicleno.getEditText().getText().toString().trim();
-       if(rbScanRfid.isChecked() && scanRFIDInput.isEmpty()){
-           tv_rfid.setError("Press trigger to Scan RFID");
-           return false;
-       } else if(rbVrn.isChecked() && vrnInput.isEmpty()){
+        if (rbScanRfid.isChecked() && scanRFIDInput.isEmpty()) {
+            tv_rfid.setError("Press trigger to Scan RFID");
+            return false;
+        } else if (rbVrn.isChecked() && vrnInput.isEmpty()) {
             textInputLayout_vehicleno.setError("Please enter VRN");
             return false;
-       }else if(rbVrn.isChecked() && vrnInput.length()<8){
-           textInputLayout_vehicleno.setError("Please enter 8 to 10 digits VRN");
+        } else if (rbVrn.isChecked() && vrnInput.length() < 8) {
+            textInputLayout_vehicleno.setError("Please enter 8 to 10 digits VRN");
 
-       }
+        }
         return true;
 
 
@@ -493,19 +535,29 @@ public class VehicleDetectionActivity extends AppCompatActivity implements RfidE
         if (!validateReason() || !validateLocation() || !validateRFIDorVRN()) {
             return;
         }
-        if(!Utils.isConnected(VehicleDetectionActivity.this)){
-            Utils.showCustomDialog(VehicleDetectionActivity.this,getString(R.string.internet_connection));
-        }else{
+        if (!Utils.isConnected(VehicleDetectionActivity.this)) {
+            Utils.showCustomDialog(VehicleDetectionActivity.this, getString(R.string.internet_connection));
+        } else {
 
             callPostRfidApi();
         }
         //Toast.makeText(this, input, Toast.LENGTH_SHORT).show();
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         if (mediaPlayer != null) {
             mediaPlayer.release();
+        }
+        try {
+            if (reader != null) {
+                reader = null;
+                readers.Dispose();
+                readers = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

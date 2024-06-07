@@ -44,16 +44,20 @@ class TrackVehicleChildAdapter extends RecyclerView.Adapter<TrackVehicleChildAda
         if (mList.get(position).getStatus().equalsIgnoreCase("Completed")) {
             //holder.tvlabel.setCompoundDrawables(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_tick_black, context.getTheme()),null,null,null);
             holder.ivStatus.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_tick_small_green, context.getTheme()));
-        } else if (mList.get(position).getStatus().equalsIgnoreCase("Open") || mList.get(position).getStatus().equalsIgnoreCase("ReOpen")) {
+        }
+        else if (mList.get(position).getStatus().equalsIgnoreCase("Open") || mList.get(position).getStatus().equalsIgnoreCase("ReOpen")) {
             //holder.tvlabel.setTextColor(Color.parseColor("#FF3B00"));
             holder.ivStatus.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_open_small_orange, context.getTheme()));
-        } else if (mList.get(position).getStatus().equals("Cancelled")) {
+        }
+        else if (mList.get(position).getStatus().equals("Cancelled")) {
             //holder.tvlabel.setTextColor(Color.parseColor("#FF0000"));
             holder.ivStatus.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_close_small_red, context.getTheme()));
-        } else if (mList.get(position).getStatus().equals("Pending")) {
+        }
+        else if (mList.get(position).getStatus().equals("Pending")) {
             //holder.tvlabel.setTextColor(Color.parseColor("#005EFF"));
             holder.ivStatus.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_pending_small_blue, context.getTheme()));
-        }else if (mList.get(position).getStatus().equals("Failed")) {
+        }
+        else if (mList.get(position).getStatus().equals("Failed")) {
             //holder.tvlabel.setTextColor(Color.parseColor("#005EFF"));
             holder.ivStatus.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_failed_small_blue, context.getTheme()));
         }

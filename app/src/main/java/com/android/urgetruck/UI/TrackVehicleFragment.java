@@ -42,14 +42,14 @@ public class TrackVehicleFragment extends Fragment {
 
     private RecyclerView rvTrackVehicle;
     private List<DataModelTrackVehicle> DataModelTrackVehicle;
-    private TextView tvvrn,tvDriverName,tvtxn,tvtransaction;
+    private TextView tvvrn, tvDriverName, tvtxn, tvtransaction;
     private ProgressBar progressbar;
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_track_vehicle,container,false);
+        View view = inflater.inflate(R.layout.fragment_track_vehicle, container, false);
 
         rvTrackVehicle = view.findViewById(R.id.rvTrackVehicle);
         tvvrn = view.findViewById(R.id.tvvrn);
@@ -59,91 +59,92 @@ public class TrackVehicleFragment extends Fragment {
         progressbar = view.findViewById(R.id.progressbar);
         Bundle bundle = getArguments();
 
-
         rvTrackVehicle.setHasFixedSize(true);
         rvTrackVehicle.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-
-        getVehicleTrackingDetails(bundle.getString("type"),bundle.getString("typevalue"));
+        getVehicleTrackingDetails(bundle.getString("type"), bundle.getString("typevalue"));
         return view;
     }
 
     private void getVehicleTrackingDetails(String type, String typeValue) {
-            if(Utils.isConnected(getActivity())){
+
+        try {
+            if (Utils.isConnected(getActivity())) {
                 progressbar.setVisibility(View.VISIBLE);
-                String baseurl= Utils.getSharedPreferences(getActivity(),"apiurl");
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
                 ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
                 TrackVehicleModel model = null;
-                if(type.equals("RFID")){
-                     model = new TrackVehicleModel("12345566",typeValue,"");
+                if (type.equals("RFID")) {
+                    model = new TrackVehicleModel("12345566", typeValue, "");
 
-                }else if(type.equals("VRN")){
-                    model = new TrackVehicleModel("12345566","",typeValue);
-
-
+                } else if (type.equals("VRN")) {
+                    model = new TrackVehicleModel("12345566", "", typeValue);
                 }
                 Call<TrackVehicleResultModel> call = apiService.getTrackVehicleDetails(model);
                 call.enqueue(new Callback<TrackVehicleResultModel>() {
                     @Override
                     public void onResponse(Call<TrackVehicleResultModel> call, Response<TrackVehicleResultModel> response) {
                         progressbar.setVisibility(View.GONE);
-                        if(response.isSuccessful()){
+                        try {
+                            if (response.isSuccessful()) {
+                                tvvrn.append(response.body().getVehicleTransactionDetails().getVrn());
+                                tvDriverName.append(response.body().getVehicleTransactionDetails().getDriverName());
+                                tvtxn.append(response.body().getVehicleTransactionDetails().getVehicleTransactionCode());
+                                if (response.body().getVehicleTransactionDetails().getTranType() == 1) {
+                                    tvtransaction.append("Outbound");
+                                } else if (response.body().getVehicleTransactionDetails().getTranType() == 2) {
+                                    tvtransaction.append("Inbound");
 
-
-                            tvvrn.append(response.body().getVehicleTransactionDetails().getVrn());
-                            tvDriverName.append(response.body().getVehicleTransactionDetails().getDriverName());
-                            tvtxn.append(response.body().getVehicleTransactionDetails().getVehicleTransactionCode());
-                            if(response.body().getVehicleTransactionDetails().getTranType() == 1){
-                                tvtransaction.append("Outbound");
-                            }else if(response.body().getVehicleTransactionDetails().getTranType() == 2){
-                                tvtransaction.append("Inbound");
-
-                            }else if(response.body().getVehicleTransactionDetails().getTranType() == 3){
-                                tvtransaction.append("Internal");
-
+                                } else if (response.body().getVehicleTransactionDetails().getTranType() == 3) {
+                                    tvtransaction.append("Internal");
+                                }
+                                List<JobMilestone> milestones = response.body().getVehicleTransactionDetails().getJobMilestones();
+                                //Collections.reverse(milestones);
+                                TrackVehicleRecyclerView adapter = new TrackVehicleRecyclerView(getActivity(), milestones);
+                                rvTrackVehicle.setAdapter(adapter);
                             }
-                            List<JobMilestone> milestones = response.body().getVehicleTransactionDetails().getJobMilestones();
-                            //Collections.reverse(milestones);
-                            TrackVehicleRecyclerView adapter = new TrackVehicleRecyclerView(getActivity(),milestones);
-                            rvTrackVehicle.setAdapter(adapter);
-
-
-
-                        }else{
-                            PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                           // Log.e("msg",message.getStatusMessage());
-                            Utils.showCustomDialogFinish(getActivity(),message.getStatusMessage());
-
-
+                            else {
+                                PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
+                                // Log.e("msg",message.getStatusMessage());
+                                Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
-
                         // progressBar.setVisibility(View.GONE);
-
-
-
-
                     }
 
                     @Override
                     public void onFailure(Call<TrackVehicleResultModel> call, Throwable t) {
-                        Log.d("TAG","Response = "+t.toString());
+                        Log.d("TAG", "Response = " + t.toString());
                         progressbar.setVisibility(View.GONE);
-                       // Utils.showCustomDialog(getActivity(),t.toString());
-                        if (t instanceof SocketTimeoutException) {
-                            // Handle timeout exception with custom message
-                            Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                        } else {
-                            // Handle other exceptions
-                            Utils.showCustomDialog(getActivity(),t.toString());
+                        // Utils.showCustomDialog(getActivity(),t.toString());
+
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(), "Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(), t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
+
                     }
                 });
 
-            }else{
-                Utils.showCustomDialogFinish(getActivity(),getString(R.string.internet_connection));
             }
-
+            else {
+                Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            }
+        } catch (Exception e) {
+            Utils.showCustomDialog(getActivity(), e.getMessage());
         }
+
+
     }
+}
 
 

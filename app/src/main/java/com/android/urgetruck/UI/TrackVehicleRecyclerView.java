@@ -29,6 +29,7 @@ public class TrackVehicleRecyclerView extends RecyclerView.Adapter<TrackVehicleR
 
 
 
+
     // data is passed into the constructor
     TrackVehicleRecyclerView(Context context, List<JobMilestone> milestones) {
         this.context = context;

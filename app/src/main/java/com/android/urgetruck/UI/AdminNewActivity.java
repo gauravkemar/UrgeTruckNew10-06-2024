@@ -92,10 +92,7 @@ public class AdminNewActivity extends AppCompatActivity {
             Utils.postsharedPreferences(AdminNewActivity.this, "apiurl", url);
 
             showCustomDialogFinish(AdminNewActivity.this, "Base Url Updated. Changes will take place after Re-Login");
-
         }
-
-
     }
 
     public void showCustomDialogFinish(Context context, String message) {

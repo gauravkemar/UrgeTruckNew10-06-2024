@@ -118,55 +118,78 @@ public class LoginActivity extends AppCompatActivity {
     private void callLoginApi(String username, String password) {
         progressBar.setVisibility(View.VISIBLE);
 
+        try {
+            if (Utils.isConnected(this)) {
+                String baseurl= Utils.getSharedPreferences(LoginActivity.this,"apiurl");
+                Log.e("url",baseurl);
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
 
-        String baseurl= Utils.getSharedPreferences(LoginActivity.this,"apiurl");
-        Log.e("url",baseurl);
-        ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                LoginModel modal = new LoginModel(username,password);
 
-        LoginModel modal = new LoginModel(username,password);
+                Call<LoginResultModel> call = apiService.PostRfid(modal);
 
-        Call<LoginResultModel> call = apiService.PostRfid(modal);
+                call.enqueue(new Callback<LoginResultModel>() {
+                    @Override
+                    public void onResponse(Call<LoginResultModel> call, Response<LoginResultModel> response) {
+                        progressBar.setVisibility(View.GONE);
 
-        call.enqueue(new Callback<LoginResultModel>() {
-            @Override
-            public void onResponse(Call<LoginResultModel> call, Response<LoginResultModel> response) {
-                progressBar.setVisibility(View.GONE);
-                if(response.isSuccessful())
-                {
-                    Utils.postsharedPreferences(LoginActivity.this,"token",response.body().getJwtToken());
-                    Utils.postsharedPreferences(LoginActivity.this,"username",response.body().getUserName());
-                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                    finish();
+                        try {
+                            if(response.isSuccessful())
+                            {
+                                Utils.postsharedPreferences(LoginActivity.this,"token",response.body().getJwtToken());
+                                Utils.postsharedPreferences(LoginActivity.this,"username",response.body().getUserName());
+                                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                                finish();
 
-                }else{
-                    APIError message = new Gson().fromJson(response.errorBody().charStream(), APIError.class);
-                    Log.e("msg",message.getMessage());
-                    Utils.showCustomDialog(LoginActivity.this,message.getMessage());
+                            }else{
+                                APIError message = new Gson().fromJson(response.errorBody().charStream(), APIError.class);
+                                Log.e("msg",message.getMessage());
+                                Utils.showCustomDialog(LoginActivity.this,message.getMessage());
 
-
-
-                }
-
-                //Log.e("submit response",response.body().getEmail());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(LoginActivity.this, "Exception : No Data Found");
+                        }
 
 
+                        //Log.e("submit response",response.body().getEmail());
+
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<LoginResultModel> call, Throwable t) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.e("error",t.toString());
+
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(LoginActivity.this,"Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(LoginActivity.this,t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(LoginActivity.this, "Exception : No Data Found");
+                        }
+
+
+
+                    }
+                });
+            }
+            else {
+                Utils.showCustomDialogFinish(this, getString(R.string.internet_connection));
             }
 
-            @Override
-            public void onFailure(Call<LoginResultModel> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Log.e("error",t.toString());
-                if (t instanceof SocketTimeoutException) {
-                    // Handle timeout exception with custom message
-                    Utils.showCustomDialog(LoginActivity.this,"Network error,\n Please check Network!!");
-                } else {
-                    // Handle other exceptions
-                    Utils.showCustomDialog(LoginActivity.this,t.toString());
-                }
 
+        }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog(this, e.getMessage());
+        }
 
-            }
-        });
 
     }
 

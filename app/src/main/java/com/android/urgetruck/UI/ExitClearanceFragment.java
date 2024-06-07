@@ -237,18 +237,19 @@ public class ExitClearanceFragment extends Fragment {
     public void uploadImages() {
 
         progressBar.setVisibility(View.VISIBLE);
+        try {
+            if (Utils.isConnected(getActivity())) {
+                List<MultipartBody.Part> list = new ArrayList<>();
 
-        List<MultipartBody.Part> list = new ArrayList<>();
+                for (Uri uri : files) {
 
-        for (Uri uri : files) {
+                    Log.i("uris", uri.getPath());
 
-            Log.i("uris", uri.getPath());
+                    list.add(prepareFilePart("file", uri));
+                }
 
-            list.add(prepareFilePart("file", uri));
-        }
-
-        String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-        ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+                ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
 //        SecurityCheckModel modal = null;
 //
 //        if (bundle.getString("type").equals("RFID")) {
@@ -259,61 +260,75 @@ public class ExitClearanceFragment extends Fragment {
 //            modal = new SecurityCheckModel("123456789", "", weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(), weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(), bundle.getString("VRN"), "WEIGHMENT DISTURBANCY", reason);
 //
 //        }
-        // ArrayList<ExitClearanceParameters> exitClearanceParameters = new ArrayList<>();
-        exitClearanceParameters.add(new ExitClearanceParameters("Vehicle Body Appearance", "OK", "", ""));
-        ArrayList<ExitClearanceParameters> parameters = new ArrayList<>(parametersHashMap.values());
+                // ArrayList<ExitClearanceParameters> exitClearanceParameters = new ArrayList<>();
+                exitClearanceParameters.add(new ExitClearanceParameters("Vehicle Body Appearance", "OK", "", ""));
+                ArrayList<ExitClearanceParameters> parameters = new ArrayList<>(parametersHashMap.values());
 
 
-        PostExitClearanceModel modal = new PostExitClearanceModel("12346678", getExitClearanceModel.getExitClearanceDetails().getVrn(), getExitClearanceModel.getExitClearanceDetails().getVehicleTransactionId().toString(), getExitClearanceModel.getExitClearanceDetails().getJobMilestoneId().toString(), parameters);
-        Log.e("request", new Gson().toJson(modal));
+                PostExitClearanceModel modal = new PostExitClearanceModel("12346678", getExitClearanceModel.getExitClearanceDetails().getVrn(), getExitClearanceModel.getExitClearanceDetails().getVehicleTransactionId().toString(), getExitClearanceModel.getExitClearanceDetails().getJobMilestoneId().toString(), parameters);
+                Log.e("request", new Gson().toJson(modal));
 
 
-        String json = new Gson().toJson(modal);
+                String json = new Gson().toJson(modal);
 
-        RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), new Gson().toJson(modal));
+                RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), new Gson().toJson(modal));
 
-        Call<ExitClearanceResultModel> call = serviceInterface.postExitClearance(list, filename);
-        call.enqueue(new Callback<ExitClearanceResultModel>() {
-            @Override
-            public void onResponse(Call<ExitClearanceResultModel> call, Response<ExitClearanceResultModel> response) {
-                progressBar.setVisibility(View.GONE);
-                Log.d("url", response.raw().request().body().toString());
-                Log.d("url", response.raw().request().headers().toString());
-                Log.d("url", response.raw().request().url().toString());
-                try {
-                    if (response.isSuccessful()) {
-                        //Toast.makeText(getActivity(), "Files uploaded successfuly", Toast.LENGTH_SHORT).show();
-                        Utils.showCustomDialogFinish(getActivity(), response.body().getStatus());
-                        Log.e("main", "the status is ----> " + response.body().getStatus());
-                        Log.e("main", "the message is ----> " + response.body().getStatusMassage());
-                    } else {
-                        Log.e("error", new Gson().toJson(response.errorBody()));
-                        Utils.showCustomDialog(getActivity(), new Gson().toJson(response.errorBody()));
+                Call<ExitClearanceResultModel> call = serviceInterface.postExitClearance(list, filename);
+                call.enqueue(new Callback<ExitClearanceResultModel>() {
+                    @Override
+                    public void onResponse(Call<ExitClearanceResultModel> call, Response<ExitClearanceResultModel> response) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.d("url", response.raw().request().body().toString());
+                        Log.d("url", response.raw().request().headers().toString());
+                        Log.d("url", response.raw().request().url().toString());
+                        try {
+                            if (response.isSuccessful()) {
+                                //Toast.makeText(getActivity(), "Files uploaded successfuly", Toast.LENGTH_SHORT).show();
+                                Utils.showCustomDialogFinish(getActivity(), response.body().getStatus());
+                                Log.e("main", "the status is ----> " + response.body().getStatus());
+                                Log.e("main", "the message is ----> " + response.body().getStatusMassage());
+                            } else {
+                                Log.e("error", new Gson().toJson(response.errorBody()));
+                                Utils.showCustomDialog(getActivity(), new Gson().toJson(response.errorBody()));
+                            }
+
+                            Log.e("res code", response.code() + "");
+
+                        } catch (Exception e) {
+                            Log.d("Exception", "|=>" + e.getMessage());
+                            Utils.showCustomDialog(getActivity(), e.getMessage());
+//
+                        }
                     }
 
-                    Log.e("res code", response.code() + "");
+                    @Override
+                    public void onFailure(Call<ExitClearanceResultModel> call, Throwable t) {
+                        progressBar.setVisibility(View.GONE);
+                        try {
+                            Log.i("my", t.getMessage());
+                            //Utils.showCustomDialog(getActivity(), t.getMessage());
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(),t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
+                        }
 
-                } catch (Exception e) {
-                    Log.d("Exception", "|=>" + e.getMessage());
-                    Utils.showCustomDialog(getActivity(), e.getMessage());
-//
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ExitClearanceResultModel> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Log.i("my", t.getMessage());
-                //Utils.showCustomDialog(getActivity(), t.getMessage());
-                if (t instanceof SocketTimeoutException) {
-                    // Handle timeout exception with custom message
-                    Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                } else {
-                    // Handle other exceptions
-                    Utils.showCustomDialog(getActivity(),t.toString());
-                }
+                    }
+                });
             }
-        });
+        }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog(getActivity(), e.getMessage());
+        }
+
+
     }
 
     @NonNull
@@ -364,59 +379,75 @@ public class ExitClearanceFragment extends Fragment {
     }
 
     private void getCheckListItems() {
-        if (Utils.isConnected(getActivity())) {
-            progressBar.setVisibility(View.VISIBLE);
-            String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
-            Call<GetCheckListItemsModel> call = apiService.getCheckListItems(123456789);
-            call.enqueue(new Callback<GetCheckListItemsModel>() {
-                @Override
-                public void onResponse(Call<GetCheckListItemsModel> call, Response<GetCheckListItemsModel> response) {
+        try {
+            if (Utils.isConnected(getActivity())) {
+                progressBar.setVisibility(View.VISIBLE);
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                Call<GetCheckListItemsModel> call = apiService.getCheckListItems(123456789);
+                call.enqueue(new Callback<GetCheckListItemsModel>() {
+                    @Override
+                    public void onResponse(Call<GetCheckListItemsModel> call, Response<GetCheckListItemsModel> response) {
 
-                    progressBar.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.GONE);
+                        try {
+                            existCheck = response.body().getExistCheckList();
+                            mandatoryItems = new HashMap<>();
 
-                    existCheck = response.body().getExistCheckList();
-                    mandatoryItems = new HashMap<>();
+                            ArrayList<String> CheckListDataArray = new ArrayList<>();
+                            for (int i = 0; i < existCheck.size(); i++) {
+                                if (existCheck.get(i).getIsMandatory()) {
+                                    mandatoryItems.put(i, false);
+                                    mandatoryItemsValue = mandatoryItemsValue + existCheck.get(i).getChecklistItem() + ".\n";
+                                }
+                                CheckListDataArray.add(existCheck.get(i).getChecklistItem());
+                                CheckBox checkBox = new CheckBox(getActivity());
+                                if (existCheck.get(i).getIsMandatory()) {
+                                    checkBox.setText(existCheck.get(i).getChecklistItem() + " **");
+                                } else {
+                                    checkBox.setText(existCheck.get(i).getChecklistItem());
+                                }
+                                checkBox.setOnClickListener(OnCheckListClick(checkBox, i));
+                                linearLayout.addView(checkBox);
 
-                    ArrayList<String> CheckListDataArray = new ArrayList<>();
-                    for (int i = 0; i < existCheck.size(); i++) {
-                        if (existCheck.get(i).getIsMandatory()) {
-                            mandatoryItems.put(i, false);
-                            mandatoryItemsValue = mandatoryItemsValue + existCheck.get(i).getChecklistItem() + ".\n";
+                            }
+                            for (ExistCheck check : existCheck) {
+                            }
+                            Log.e("response", response.body().toString());
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
-                        CheckListDataArray.add(existCheck.get(i).getChecklistItem());
-                        CheckBox checkBox = new CheckBox(getActivity());
-                        if (existCheck.get(i).getIsMandatory()) {
-                            checkBox.setText(existCheck.get(i).getChecklistItem() + " **");
-                        } else {
-                            checkBox.setText(existCheck.get(i).getChecklistItem());
+
+                    }
+                    @Override
+                    public void onFailure(Call<GetCheckListItemsModel> call, Throwable t) {
+                        Log.d("TAG", "Response = " + t.toString());
+                        progressBar.setVisibility(View.GONE);
+                        //Utils.showCustomDialogFinish(getActivity(), t.toString());
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(),t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
-                        checkBox.setOnClickListener(OnCheckListClick(checkBox, i));
-                        linearLayout.addView(checkBox);
 
                     }
-                    for (ExistCheck check : existCheck) {
-                    }
-                    Log.e("response", response.body().toString());
-                }
-                @Override
-                public void onFailure(Call<GetCheckListItemsModel> call, Throwable t) {
-                    Log.d("TAG", "Response = " + t.toString());
-                    progressBar.setVisibility(View.GONE);
-                    //Utils.showCustomDialogFinish(getActivity(), t.toString());
-                    if (t instanceof SocketTimeoutException) {
-                        // Handle timeout exception with custom message
-                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                    } else {
-                        // Handle other exceptions
-                        Utils.showCustomDialog(getActivity(),t.toString());
-                    }
-                }
-            });
+                });
 
-        } else {
-            Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            } else {
+                Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            }
         }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog(getActivity(), e.getMessage());
+        }
+
 
     }
 

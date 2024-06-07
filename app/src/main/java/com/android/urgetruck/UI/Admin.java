@@ -82,9 +82,7 @@ public class Admin extends AppCompatActivity {
 
         }
     }
-
     private void checkinputUrl() {
-
         String url = edServerIp.getText().toString().trim();
         String port = edPort.getText().toString().trim();
         if (port.equals(""))
@@ -105,9 +103,7 @@ public class Admin extends AppCompatActivity {
             Utils.postsharedPreferences(Admin.this, "isadmin", "");
             Utils.postsharedPreferences(Admin.this, "apiurl", url);
             Utils.postsharedPreferences(Admin.this, "port", port);
-
             showCustomDialogFinish(Admin.this, "Base Url Updated. Changes will take place after Re-Login");
-
         }
 
 

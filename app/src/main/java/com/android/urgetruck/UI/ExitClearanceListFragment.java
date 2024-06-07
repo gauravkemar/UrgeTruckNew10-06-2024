@@ -172,80 +172,93 @@ public class ExitClearanceListFragment extends Fragment implements EMDKManager.E
         Log.e("result", manufacturer + "   " + model);
     }
     private void getClearanceList(String type, String typeValue) {
-        if (Utils.isConnected(getActivity())) {
-            progressbar.setVisibility(View.VISIBLE);
-            String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
-            Call<GetExitClearanceModel> call = null;
-            if (type.equals("RFID")) {
-                call = apiService.getExitClearanceDetails(123456789, typeValue, "");
+        try {
+            if (Utils.isConnected(getActivity())) {
+                progressbar.setVisibility(View.VISIBLE);
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                Call<GetExitClearanceModel> call = null;
+                if (type.equals("RFID")) {
+                    call = apiService.getExitClearanceDetails(123456789, typeValue, "");
 
 
-            } else if (type.equals("VRN")) {
-                call = apiService.getExitClearanceDetails(123456789, "", typeValue);
+                } else if (type.equals("VRN")) {
+                    call = apiService.getExitClearanceDetails(123456789, "", typeValue);
 
-            }
-            call.enqueue(new Callback<GetExitClearanceModel>() {
-                @Override
-                public void onResponse(Call<GetExitClearanceModel> call, Response<GetExitClearanceModel> response) {
-                    progressbar.setVisibility(View.GONE);
-                    Log.d("url", response.raw().request().headers().toString());
-                    Log.d("url", response.raw().request().url().toString());
-                    if (response.isSuccessful()) {
-                        try {
-                            Log.e("result", response.body().getExitClearanceDetails().getProducts().get(0).getProductName());
-                            getExitClearanceModel = response.body();
-                            tvVrn.setText(getExitClearanceModel.getExitClearanceDetails().getVrn());
-                            tvDriverName.setText(getExitClearanceModel.getExitClearanceDetails().getDriverName());
-                            checkList = new ArrayList<>(getExitClearanceModel.getExitClearanceDetails().getProducts().size());
-                            for (int i = 0; i < response.body().getExitClearanceDetails().getProducts().size(); i++) {
-                                checkList.add(false);
+                }
+                call.enqueue(new Callback<GetExitClearanceModel>() {
+                    @Override
+                    public void onResponse(Call<GetExitClearanceModel> call, Response<GetExitClearanceModel> response) {
+                        progressbar.setVisibility(View.GONE);
+                        Log.d("url", response.raw().request().headers().toString());
+                        Log.d("url", response.raw().request().url().toString());
+                        if (response.isSuccessful()) {
+                            try {
+                                Log.e("result", response.body().getExitClearanceDetails().getProducts().get(0).getProductName());
+                                getExitClearanceModel = response.body();
+                                tvVrn.setText(getExitClearanceModel.getExitClearanceDetails().getVrn());
+                                tvDriverName.setText(getExitClearanceModel.getExitClearanceDetails().getDriverName());
+                                checkList = new ArrayList<>(getExitClearanceModel.getExitClearanceDetails().getProducts().size());
+                                for (int i = 0; i < response.body().getExitClearanceDetails().getProducts().size(); i++) {
+                                    checkList.add(false);
+                                }
+                                adapter = new ExitClearanceRecyclerViewAdapter(getActivity(), getExitClearanceModel.getExitClearanceDetails().getProducts(), checkList);
+                                rvExitClearanceList.setAdapter(adapter);
                             }
-                            adapter = new ExitClearanceRecyclerViewAdapter(getActivity(), getExitClearanceModel.getExitClearanceDetails().getProducts(), checkList);
-                            rvExitClearanceList.setAdapter(adapter);
-                        }
-                        catch (Exception e) {
+                            catch (Exception e) {
+                                Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
+                            }
+
+                        } else {
+                            try {
+                                PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
+                                Log.e("msg", message.getStatusMessage());
+                                Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+                            }
+                            catch (Exception e)
+                            {
+                                Toast.makeText(getActivity(), "Exit Clearance Error!!", Toast.LENGTH_SHORT).show();
+                            }
+
+
 
                         }
 
-                    } else {
+                        // progressBar.setVisibility(View.GONE);
+
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<GetExitClearanceModel> call, Throwable t) {
+                        Log.d("TAG", "Response = " + t.toString());
+                        progressbar.setVisibility(View.GONE);
+                        //Utils.showCustomDialog(getActivity(), t.toString());
+
                         try {
-                            PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                            Log.e("msg", message.getStatusMessage());
-                            Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(),t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
-                        catch (Exception e)
-                        {
-                            Toast.makeText(getActivity(), "Exit Clearance Error!!", Toast.LENGTH_SHORT).show();
-                        }
-                        
-
 
                     }
+                });
 
-                    // progressBar.setVisibility(View.GONE);
-
-
-                }
-
-                @Override
-                public void onFailure(Call<GetExitClearanceModel> call, Throwable t) {
-                    Log.d("TAG", "Response = " + t.toString());
-                    progressbar.setVisibility(View.GONE);
-                    //Utils.showCustomDialog(getActivity(), t.toString());
-                    if (t instanceof SocketTimeoutException) {
-                        // Handle timeout exception with custom message
-                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                    } else {
-                        // Handle other exceptions
-                        Utils.showCustomDialog(getActivity(),t.toString());
-                    }
-                }
-            });
-
-        } else {
-            Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            } else {
+                Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            }
         }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog (getActivity(), e.getMessage());
+        }
+
     }
 
 

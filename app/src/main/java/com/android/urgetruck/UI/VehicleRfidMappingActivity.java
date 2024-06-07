@@ -140,110 +140,130 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
 
     private void callPostRfidMapApi(Boolean override) {
 
-        if(Utils.isConnected(getApplicationContext())) {
-            progressBar.setVisibility(View.VISIBLE);
+        try {
+            if(Utils.isConnected(getApplicationContext())) {
+                progressBar.setVisibility(View.VISIBLE);
 
-            String baseurl= Utils.getSharedPreferences(VehicleRfidMappingActivity.this,"apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                String baseurl= Utils.getSharedPreferences(VehicleRfidMappingActivity.this,"apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
 
-            RfidMappingModel modal = null;
-            String rfid = autoCompleteTextView_rfid.getText().toString().trim();
-            autoCompleteTextView_rfid.setInputType(0);
-            try {
-                reader.disconnect();
-            } catch (InvalidUsageException e) {
-                e.printStackTrace();
-            } catch (OperationFailureException e) {
-                e.printStackTrace();
-            }
+                RfidMappingModel modal = null;
+                String rfid = autoCompleteTextView_rfid.getText().toString().trim();
+                autoCompleteTextView_rfid.setInputType(0);
+                try {
+                    reader.disconnect();
+                } catch (InvalidUsageException e) {
+                    e.printStackTrace();
+                } catch (OperationFailureException e) {
+                    e.printStackTrace();
+                }
 
-            if (btnVehicleMapping.getText().equals("Verify Tag")) {
-                modal = new RfidMappingModel("123456", "",autoCompleteTextView_rfid.getText().toString().trim(), "False");
-
-
-            } else if (btnVehicleMapping.getText().equals("Map") && !override) {
-
-                modal = new RfidMappingModel("123456", tvVrn.getText().toString().trim(), autoCompleteTextView_rfid.getText().toString().trim(), "False");
-
-            } else if(btnVehicleMapping.getText().equals("Map") && override){
-                modal = new RfidMappingModel("123456", tvVrn.getText().toString().trim(), autoCompleteTextView_rfid.getText().toString().trim(), "True");
-
-            }
-
-            Log.e("Request",new Gson().toJson(modal));
-
-            Call<RfidMappingResultModel> call = apiService.RfidMapping(modal);
-
-            call.enqueue(new Callback<RfidMappingResultModel>() {
-                @Override
-                public void onResponse(Call<RfidMappingResultModel> call, Response<RfidMappingResultModel> response) {
-                    progressBar.setVisibility(View.GONE);
-                    if (response.isSuccessful()) {
-                        if (btnVehicleMapping.getText().equals("Verify Tag")) {
-                            textInputLayout_vehicleno.setVisibility(View.VISIBLE);
-                            tvVrn.setText(response.body().getVrn());
-                            tvVrn.setFocusable(false);
-                            autoCompleteTextView_rfid.setText(rfid);
-                            btnVehicleMapping.setVisibility(View.GONE);
-                            Utils.showCustomDialog(VehicleRfidMappingActivity.this, response.body().getStatusMessage());
+                if (btnVehicleMapping.getText().equals("Verify Tag")) {
+                    modal = new RfidMappingModel("123456", "",autoCompleteTextView_rfid.getText().toString().trim(), "False");
 
 
-                        } else {
-                            textInputLayout_vehicleno.setVisibility(View.VISIBLE);
-                            tvVrn.setText(response.body().getVrn());
-                            tvVrn.setFocusable(false);
-                            autoCompleteTextView_rfid.setText(rfid);
-                            btnVehicleMapping.setVisibility(View.GONE);
-                            Utils.showCustomDialogFinish(VehicleRfidMappingActivity.this, response.body().getStatusMessage());
-                        }
+                } else if (btnVehicleMapping.getText().equals("Map") && !override) {
 
-                    } else {
+                    modal = new RfidMappingModel("123456", tvVrn.getText().toString().trim(), autoCompleteTextView_rfid.getText().toString().trim(), "False");
 
-                        PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                        //Log.e("msg", message.getStatusMessage());
-                        if (message.getStatus().equals("RecordNotFound")) {
-                            Utils.showCustomDialog(VehicleRfidMappingActivity.this, message.getStatusMessage());
-                            textInputLayout_vehicleno.setVisibility(View.VISIBLE);
-                            autoCompleteTextView_rfid.setText(rfid);
-                            btnVehicleMapping.setText("Map");
-
-                        } else if (message.getStatus().equals("Duplicate")) {
-                          //  Utils.showCustomDialog(VehicleRfidMappingActivity.this, message.getStatusMessage());
-
-                            showCustomDialog(VehicleRfidMappingActivity.this,"The vehicle already has a different RFID tag mapped. Do you want to overwrite?");
-                            textInputLayout_vehicleno.setVisibility(View.VISIBLE);
-                            autoCompleteTextView_rfid.setText(rfid);
-                            tv_rfid.setFocusable(false);
-                            tvVrn.setFocusable(false);
-                            btnVehicleMapping.setVisibility(View.GONE);
-
-                        }
-                    }
+                } else if(btnVehicleMapping.getText().equals("Map") && override){
+                    modal = new RfidMappingModel("123456", tvVrn.getText().toString().trim(), autoCompleteTextView_rfid.getText().toString().trim(), "True");
 
                 }
 
-                @Override
-                public void onFailure(Call<RfidMappingResultModel> call, Throwable t) {
-                    progressBar.setVisibility(View.GONE);
-                    //Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
-                    Log.e("error", t.toString());
+                Log.e("Request",new Gson().toJson(modal));
 
-                    if (t instanceof SocketTimeoutException) {
-                        // Handle timeout exception with custom message
-                        Toast.makeText(VehicleRfidMappingActivity.this,"Network error,\n Please check Network!!",Toast.LENGTH_SHORT).show();
+                Call<RfidMappingResultModel> call = apiService.RfidMapping(modal);
 
-                    } else {
-                        // Handle other exceptions
-                        Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
+                call.enqueue(new Callback<RfidMappingResultModel>() {
+                    @Override
+                    public void onResponse(Call<RfidMappingResultModel> call, Response<RfidMappingResultModel> response) {
+                        progressBar.setVisibility(View.GONE);
+
+                        try {
+                            if (response.isSuccessful()) {
+                                if (btnVehicleMapping.getText().equals("Verify Tag")) {
+                                    textInputLayout_vehicleno.setVisibility(View.VISIBLE);
+                                    tvVrn.setText(response.body().getVrn());
+                                    tvVrn.setFocusable(false);
+                                    autoCompleteTextView_rfid.setText(rfid);
+                                    btnVehicleMapping.setVisibility(View.GONE);
+                                    Utils.showCustomDialog(VehicleRfidMappingActivity.this, response.body().getStatusMessage());
+
+                                } else {
+                                    textInputLayout_vehicleno.setVisibility(View.VISIBLE);
+                                    tvVrn.setText(response.body().getVrn());
+                                    tvVrn.setFocusable(false);
+                                    autoCompleteTextView_rfid.setText(rfid);
+                                    btnVehicleMapping.setVisibility(View.GONE);
+                                    Utils.showCustomDialogFinish(VehicleRfidMappingActivity.this, response.body().getStatusMessage());
+                                }
+                            }
+                            else {
+
+                                PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
+                                //Log.e("msg", message.getStatusMessage());
+                                if (message.getStatus().equals("RecordNotFound")) {
+                                    Utils.showCustomDialog(VehicleRfidMappingActivity.this, message.getStatusMessage());
+                                    textInputLayout_vehicleno.setVisibility(View.VISIBLE);
+                                    autoCompleteTextView_rfid.setText(rfid);
+                                    btnVehicleMapping.setText("Map");
+
+                                } else if (message.getStatus().equals("Duplicate")) {
+                                    //  Utils.showCustomDialog(VehicleRfidMappingActivity.this, message.getStatusMessage());
+
+                                    showCustomDialog(VehicleRfidMappingActivity.this,"The vehicle already has a different RFID tag mapped. Do you want to overwrite?");
+                                    textInputLayout_vehicleno.setVisibility(View.VISIBLE);
+                                    autoCompleteTextView_rfid.setText(rfid);
+                                    tv_rfid.setFocusable(false);
+                                    tvVrn.setFocusable(false);
+                                    btnVehicleMapping.setVisibility(View.GONE);
+
+                                }
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(VehicleRfidMappingActivity.this, "Exception : No Data Found");
+                        }
+
 
                     }
 
-                }
-            });
-        }else{
-            Utils.showCustomDialog(this,getString(R.string.internet_connection));
+                    @Override
+                    public void onFailure(Call<RfidMappingResultModel> call, Throwable t) {
+                        progressBar.setVisibility(View.GONE);
+                        //Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
+                        Log.e("error", t.toString());
 
+
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Toast.makeText(VehicleRfidMappingActivity.this,"Network error,\n Please check Network!!",Toast.LENGTH_SHORT).show();
+
+                            } else {
+                                // Handle other exceptions
+                                Toast.makeText(VehicleRfidMappingActivity.this,t.toString(),Toast.LENGTH_SHORT).show();
+
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(VehicleRfidMappingActivity.this, "Exception : No Data Found");
+                        }
+
+
+
+                    }
+                });
+            }
+            else{
+                Utils.showCustomDialogFinish(this,getString(R.string.internet_connection));
+            }
         }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog(this,e.getMessage());
+        }
+
+
 
     }
 
@@ -302,12 +322,8 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
                         }
                         autoCompleteTextView_rfid.setAdapter(adapter1);
 
-
-
                     }
                 });
-
-
 
             }
         } catch (InvalidUsageException e) {
@@ -395,6 +411,7 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
         if (reader != null) {
             try {
                 reader.disconnect();
+                reader = null;
             } catch (InvalidUsageException e) {
                 e.printStackTrace();
             } catch (OperationFailureException e) {
@@ -404,10 +421,19 @@ public class VehicleRfidMappingActivity extends AppCompatActivity implements Rfi
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
         if (mediaPlayer != null) {
             mediaPlayer.release();
+        }
+        try {
+            if (reader != null) {
+                reader = null;
+                readers.Dispose();
+                readers = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

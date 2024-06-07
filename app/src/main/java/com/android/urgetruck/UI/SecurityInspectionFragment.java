@@ -179,113 +179,144 @@ public class SecurityInspectionFragment extends Fragment {
 
 
     private void getWeighmentDetails(String type, String typeValue) {
-        if (Utils.isConnected(getActivity())) {
-            progressBar.setVisibility(View.VISIBLE);
-            String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
-            Call<WeightDetailsResultModel> call = null;
-            if (type.equals("RFID")) {
-                call = apiService.getWeightDetails(123456789, typeValue, "");
 
 
-            } else if (type.equals("VRN")) {
-                call = apiService.getWeightDetails(123456789, "", typeValue);
+        try {
+            if (Utils.isConnected(getActivity())) {
+                progressBar.setVisibility(View.VISIBLE);
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                Call<WeightDetailsResultModel> call = null;
+                if (type.equals("RFID")) {
+                    call = apiService.getWeightDetails(123456789, typeValue, "");
+                } else if (type.equals("VRN")) {
+                    call = apiService.getWeightDetails(123456789, "", typeValue);
+                }
+                call.enqueue(new Callback<WeightDetailsResultModel>() {
+                    @Override
+                    public void onResponse(Call<WeightDetailsResultModel> call, Response<WeightDetailsResultModel> response) {
+                        progressBar.setVisibility(View.GONE);
+                        try {
+                            if (response.isSuccessful()) {
+                                weightDetailsResultModel = response.body();
+                                tvVrn.setText(weightDetailsResultModel.getWeighmentDetails().getVrn());
+                                tvOriginalWeight.setText(weightDetailsResultModel.getWeighmentDetails().getExpectedWeight());
+                                tvNewWeight.setText(weightDetailsResultModel.getWeighmentDetails().getActualWeight());
+
+                            } else {
+                                PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
+                                Log.e("msg", message.getStatusMessage());
+                                Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+
+
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeightDetailsResultModel> call, Throwable t) {
+                        Log.d("TAG", "Response = " + t.toString());
+                        progressBar.setVisibility(View.GONE);
+                        // Utils.showCustomDialog(getActivity(), t.toString());
+
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(), "Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(), t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
+                        }
+
+                    }
+                });
 
             }
-            call.enqueue(new Callback<WeightDetailsResultModel>() {
-                @Override
-                public void onResponse(Call<WeightDetailsResultModel> call, Response<WeightDetailsResultModel> response) {
+            else {
+                Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            }
+        } catch (Exception e) {
+            Utils.showCustomDialog(getActivity(), e.getMessage());
 
-                    progressBar.setVisibility(View.GONE);
-                    if (response.isSuccessful()) {
-                        weightDetailsResultModel = response.body();
-                        tvVrn.setText(weightDetailsResultModel.getWeighmentDetails().getVrn());
-                        tvOriginalWeight.setText(weightDetailsResultModel.getWeighmentDetails().getExpectedWeight());
-                        tvNewWeight.setText(weightDetailsResultModel.getWeighmentDetails().getActualWeight());
-
-                    } else {
-                        PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                        Log.e("msg", message.getStatusMessage());
-                        Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
-
-
-                    }
-
-                }
-
-                @Override
-                public void onFailure(Call<WeightDetailsResultModel> call, Throwable t) {
-                    Log.d("TAG", "Response = " + t.toString());
-                    progressBar.setVisibility(View.GONE);
-                   // Utils.showCustomDialog(getActivity(), t.toString());
-                    if (t instanceof SocketTimeoutException) {
-                        // Handle timeout exception with custom message
-                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                    } else {
-                        // Handle other exceptions
-                        Utils.showCustomDialog(getActivity(), t.toString());
-
-                    }
-                }
-            });
-
-        } else {
-            Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
         }
 
     }
 
     private void getAllWeighBridge() {
-        if (Utils.isConnected(getActivity())) {
-            progressBar.setVisibility(View.VISIBLE);
-            String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-            ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
-            Call<WBResponseModel> call = null;
 
-            call = apiService.getAllWeighBridgeList();
+        try {
+            if (Utils.isConnected(getActivity())) {
+                progressBar.setVisibility(View.VISIBLE);
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+                ApiInterface apiService = APiClient.getClient(baseurl).create(ApiInterface.class);
+                Call<WBResponseModel> call = null;
 
-            call.enqueue(new Callback<WBResponseModel>() {
-                @Override
-                public void onResponse(Call<WBResponseModel> call, Response<WBResponseModel> response) {
+                call = apiService.getAllWeighBridgeList();
 
-                    progressBar.setVisibility(View.GONE);
-                    if (response.isSuccessful()) {
-                        WBResponseModel wbResponseModel = response.body();
-                        List<WBListResultModel> jsonArray = wbResponseModel.getWbListResultModels();
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            wbId.add(jsonArray.get(i).getWbId());
-                            wbName.add(jsonArray.get(i).getWbName());
+                call.enqueue(new Callback<WBResponseModel>() {
+                    @Override
+                    public void onResponse(Call<WBResponseModel> call, Response<WBResponseModel> response) {
+
+                        progressBar.setVisibility(View.GONE);
+
+                        try {
+                            if (response.isSuccessful()) {
+                                WBResponseModel wbResponseModel = response.body();
+                                List<WBListResultModel> jsonArray = wbResponseModel.getWbListResultModels();
+                                for (int i = 0; i < jsonArray.size(); i++) {
+                                    wbId.add(jsonArray.get(i).getWbId());
+                                    wbName.add(jsonArray.get(i).getWbName());
+                                }
+                                populateWbDropdown(wbName);
+
+                            } else {
+                                PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
+                                Log.e("msg", message.getStatusMessage());
+                                Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
                         }
-                        populateWbDropdown(wbName);
+                    }
 
-                    } else {
-                        PostRfidResultModel message = new Gson().fromJson(response.errorBody().charStream(), PostRfidResultModel.class);
-                        Log.e("msg", message.getStatusMessage());
-                        Utils.showCustomDialogFinish(getActivity(), message.getStatusMessage());
+                    @Override
+                    public void onFailure(Call<WBResponseModel> call, Throwable t) {
+                        Log.d("TAG", "Response = " + t.toString());
+                        progressBar.setVisibility(View.GONE);
+                        //Utils.showCustomDialog(getActivity(), t.toString());
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(), "Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(), t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
+                        }
 
 
                     }
+                });
 
-                }
-
-                @Override
-                public void onFailure(Call<WBResponseModel> call, Throwable t) {
-                    Log.d("TAG", "Response = " + t.toString());
-                    progressBar.setVisibility(View.GONE);
-                    //Utils.showCustomDialog(getActivity(), t.toString());
-                    if (t instanceof SocketTimeoutException) {
-                        // Handle timeout exception with custom message
-                        Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                    } else {
-                        // Handle other exceptions
-                        Utils.showCustomDialog(getActivity(),t.toString());
-                    }
-                }
-            });
-
-        } else {
-            Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            }
+            else {
+                Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
+            }
         }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog (getActivity(), e.getMessage());
+        }
+
+
 
     }
 
@@ -438,8 +469,13 @@ public class SecurityInspectionFragment extends Fragment {
                     Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                     startActivityForResult(takePicture, 0);
                 } else if (options[item].equals("Choose from Gallery")) {
-                    Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(pickPhoto, 1);//one can be replaced with any action code
+                    //Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    //startActivityForResult(pickPhoto, 1);//one can be replaced with any action code
+
+
+                    Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                    getIntent.setType("image/*");
+                    startActivityForResult(getIntent, 1);//one can be replaced with any action code
                 } else if (options[item].equals("Cancel")) {
                     dialog.dismiss();
                 }
@@ -501,19 +537,24 @@ public class SecurityInspectionFragment extends Fragment {
     //===== Upload files to server
     public void uploadImages() {
 
+
         progressBar.setVisibility(View.VISIBLE);
-        List<MultipartBody.Part> list = new ArrayList<>();
+        try {
 
-        for (Uri uri : files) {
+            if(Utils.isConnected(getActivity()))
+            {
+                List<MultipartBody.Part> list = new ArrayList<>();
 
-            Log.i("uris", uri.getPath());
+                for (Uri uri : files) {
 
-            list.add(prepareFilePart("file", uri));
-        }
+                    Log.i("uris", uri.getPath());
 
-        String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
-        ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
-        SecurityCheckModel modal = null;
+                    list.add(prepareFilePart("file", uri));
+                }
+
+                String baseurl = Utils.getSharedPreferences(getActivity(), "apiurl");
+                ApiInterface serviceInterface = APiClient.getClient(baseurl).create(ApiInterface.class);
+                SecurityCheckModel modal = null;
 
         /*if (bundle.getString("type").equals("RFID")) {
             if (auto) {
@@ -534,62 +575,88 @@ public class SecurityInspectionFragment extends Fragment {
 
 
         }*/
-        if (auto) {
-            modal = new SecurityCheckModel("123456789", "", weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(), weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(), weightDetailsResultModel.getWeighmentDetails().getVrn(), "WEIGHMENT DISTURBANCY", reason, 0);
-        } else {
-            int weighbridgeId = wbId.get(wbName.indexOf(actvWb.getText().toString().trim()));
-            modal = new SecurityCheckModel("123456789", "", weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(), weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(), weightDetailsResultModel.getWeighmentDetails().getVrn(), "WEIGHMENT DISTURBANCY", reason, weighbridgeId);
-        }
+                if (auto) {
+                    modal = new SecurityCheckModel("123456789", "",
+                            weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(),
+                            weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(),
+                            weightDetailsResultModel.getWeighmentDetails().getVrn(), "WEIGHMENT DISTURBANCY", reason,
+                            0);
+                } else {
+                    int weighbridgeId = wbId.get(wbName.indexOf(actvWb.getText().toString().trim()));
+                    modal = new SecurityCheckModel("123456789", "",
+                            weightDetailsResultModel.getWeighmentDetails().getJobMilestoneId().toString(),
+                            weightDetailsResultModel.getWeighmentDetails().getVehicleTransactionId().toString(),
+                            weightDetailsResultModel.getWeighmentDetails().getVrn(),
+                            "WEIGHMENT DISTURBANCY", reason, weighbridgeId);
+                }
 
-        RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), new Gson().toJson(modal));
+                RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), new Gson().toJson(modal));
 
-        Call<SecurityCheckResultModel> call = serviceInterface.postSecurityCheck(list, filename);
+                Call<SecurityCheckResultModel> call = serviceInterface.postSecurityCheck(list, filename);
 
-        call.enqueue(new Callback<SecurityCheckResultModel>() {
-            @Override
-            public void onResponse(Call<SecurityCheckResultModel> call, Response<SecurityCheckResultModel> response) {
-                progressBar.setVisibility(View.GONE);
-                Log.d("url", response.raw().request().body().toString());
-                Log.d("url", response.raw().request().headers().toString());
-                Log.d("url", response.raw().request().url().toString());
-                try {
+                call.enqueue(new Callback<SecurityCheckResultModel>() {
+                    @Override
+                    public void onResponse(Call<SecurityCheckResultModel> call, Response<SecurityCheckResultModel> response) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.d("url", response.raw().request().body().toString());
+                        Log.d("url", response.raw().request().headers().toString());
+                        Log.d("url", response.raw().request().url().toString());
+                        try {
 
-                    if (response.isSuccessful()) {
-                        //Toast.makeText(getActivity(), "Files uploaded successfuly", Toast.LENGTH_SHORT).show();
-                        Utils.showCustomDialogFinish(getActivity(), response.body().getStatus());
-                        Log.e("main", "the status is ----> " + response.body().getStatus());
-                        Log.e("main", "the message is ----> " + response.body().getStatusMassage());
-                    } else {
-                        Log.e("error", new Gson().toJson(response.errorBody()));
-                        Utils.showCustomDialog(getActivity(), new Gson().toJson(response.errorBody()));
+                            if (response.isSuccessful()) {
+                                //Toast.makeText(getActivity(), "Files uploaded successfuly", Toast.LENGTH_SHORT).show();
+                                Utils.showCustomDialogFinish(getActivity(), response.body().getStatus());
+                                Log.e("main", "the status is ----> " + response.body().getStatus());
+                                Log.e("main", "the message is ----> " + response.body().getStatusMassage());
+                            } else {
+                                Log.e("error", new Gson().toJson(response.errorBody()));
+                                Utils.showCustomDialog(getActivity(), new Gson().toJson(response.errorBody()));
+                            }
+
+                            Log.e("res code", response.code() + "");
+
+
+                        } catch (Exception e) {
+                            Log.d("Exception", "|=>" + e.getMessage());
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
+//
+                        }
                     }
 
-                    Log.e("res code", response.code() + "");
+                    @Override
+                    public void onFailure(Call<SecurityCheckResultModel> call, Throwable t) {
+                        progressBar.setVisibility(View.GONE);
+                        Log.i("my", t.getMessage());
+                        // Utils.showCustomDialog(getActivity(), t.getMessage());
+
+                        try {
+                            if (t instanceof SocketTimeoutException) {
+                                // Handle timeout exception with custom message
+                                Utils.showCustomDialog(getActivity(), "Network error,\n Please check Network!!");
+                            } else {
+                                // Handle other exceptions
+                                Utils.showCustomDialog(getActivity(), t.toString());
+                            }
+                        } catch (Exception e) {
+                            Utils.showCustomDialog(getActivity(), "Exception : No Data Found");
+                        }
 
 
-                } catch (Exception e) {
-                    Log.d("Exception", "|=>" + e.getMessage());
-                    Utils.showCustomDialog(getActivity(), e.getMessage());
-//
-                }
+
+                    }
+                });
+            }
+            else
+            {
+                Utils.showCustomDialogFinish(getActivity(), getString(R.string.internet_connection));
             }
 
-            @Override
-            public void onFailure(Call<SecurityCheckResultModel> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Log.i("my", t.getMessage());
-               // Utils.showCustomDialog(getActivity(), t.getMessage());
+        }
+        catch (Exception e)
+        {
+            Utils.showCustomDialog(getActivity(), e.getMessage());
+        }
 
-                if (t instanceof SocketTimeoutException) {
-                    // Handle timeout exception with custom message
-                    Utils.showCustomDialog(getActivity(),"Network error,\n Please check Network!!");
-                } else {
-                    // Handle other exceptions
-                    Utils.showCustomDialog(getActivity(),t.toString());
-                }
-
-            }
-        });
     }
 
     @NonNull

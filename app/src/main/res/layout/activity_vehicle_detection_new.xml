@@ -64,6 +64,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
+
                         android:hint="Select Location">
 
                         <AutoCompleteTextView
@@ -83,6 +84,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
+                        android:visibility="gone"
                         android:hint="Select Location">
 
                         <AutoCompleteTextView
@@ -103,6 +105,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
+                        android:visibility="gone"
                         android:hint="Select Location">
 
                         <AutoCompleteTextView
@@ -118,7 +121,9 @@
 
 
 
-                    <include layout="@layout/scan_layout" />
+                    <include
+                        android:id="@+id/scanLayout"
+                        layout="@layout/scan_layout" />
 
                     <Button
                         android:id="@+id/btn_vehicledetection"

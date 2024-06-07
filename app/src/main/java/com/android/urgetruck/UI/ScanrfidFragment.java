@@ -88,7 +88,6 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 if (radioGroup.getCheckedRadioButtonId() == R.id.rbScanRfid) {
-
                     textInputLayout_vehicleno.setVisibility(View.GONE);
                     tvVrn.setText("");
                     tv_rfid.setError("");
@@ -175,7 +174,30 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
         } catch (OperationFailureException e) {
             e.printStackTrace();
         }
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (reader != null) {
+            try {
+                reader.disconnect();
+                reader=null;
+            } catch (InvalidUsageException e) {
+                e.printStackTrace();
+            } catch (OperationFailureException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(reader==null)
+        {
+            connectReader();
+        }
     }
 
     private void connectReader() {
@@ -196,16 +218,10 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
                 antennaRfConfig.setTransmitPowerIndex(Integer.parseInt(Utils.getSharedPreferences(getActivity(),"antennapower")));
                 // set the configuration
                 reader.Config.Antennas.setAntennaRfConfig(1, antennaRfConfig);
-
                 reader.Events.addEventsListener(this);
-
                 reader.Events.setHandheldEvent(true);
-
                 reader.Events.setTagReadEvent(true);
-
                 reader.Events.setAttachTagDataWithReadEvent(true);
-
-
                 TriggerInfo triggerInfo = new TriggerInfo();
 
                 triggerInfo.StartTrigger.setTriggerType(START_TRIGGER_TYPE.START_TRIGGER_TYPE_IMMEDIATE);
@@ -229,6 +245,7 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
         if (reader != null) {
             try {
                 reader.disconnect();
+                reader=null;
             } catch (InvalidUsageException e) {
                 e.printStackTrace();
             } catch (OperationFailureException e) {
@@ -314,6 +331,15 @@ public class ScanrfidFragment extends Fragment implements RfidEventsListener {
         super.onDestroy();
         if (mediaPlayer != null) {
             mediaPlayer.release();
+        }
+        try {
+            if (reader != null) {
+                reader = null;
+                readers.Dispose();
+                readers = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

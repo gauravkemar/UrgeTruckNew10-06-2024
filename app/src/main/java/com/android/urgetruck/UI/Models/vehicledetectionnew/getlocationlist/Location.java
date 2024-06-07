@@ -1,105 +1,97 @@
 package com.android.urgetruck.UI.Models.vehicledetectionnew.getlocationlist;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class Location {
-        private String createdBy;
-        private String createdDate;
-        private List<Object> currentQueue; // Adjust this based on the actual type
-        private String detectableBy;
-        private String displayName;
-        private boolean isActive;
-        private String locationCode;
-        private int locationId;
-        private String locationName;
-        private Object locationType; // Adjust this based on the actual type
-        private int maxQueueSize;
-        private int minQueueSize;
-        private Object modifiedBy; // Adjust this based on the actual type
-        private Object modifiedDate; // Adjust this based on the actual type
-        private Object parentLocationCode; // Adjust this based on the actual type
-        private int sequence;
-        private List<Object> weighBridgeMaster; // Adjust this based on the actual type
+    @SerializedName("locationId")
+    @Expose
+    private int locationId;
 
-        // Constructor
-        public Location(String createdBy, String createdDate, List<Object> currentQueue, String detectableBy,
-                        String displayName, boolean isActive, String locationCode, int locationId,
-                        String locationName, Object locationType, int maxQueueSize, int minQueueSize,
-                        Object modifiedBy, Object modifiedDate, Object parentLocationCode, int sequence,
-                        List<Object> weighBridgeMaster) {
-            this.createdBy = createdBy;
-            this.createdDate = createdDate;
-            this.currentQueue = currentQueue;
-            this.detectableBy = detectableBy;
-            this.displayName = displayName;
-            this.isActive = isActive;
-            this.locationCode = locationCode;
-            this.locationId = locationId;
-            this.locationName = locationName;
-            this.locationType = locationType;
-            this.maxQueueSize = maxQueueSize;
-            this.minQueueSize = minQueueSize;
-            this.modifiedBy = modifiedBy;
-            this.modifiedDate = modifiedDate;
-            this.parentLocationCode = parentLocationCode;
-            this.sequence = sequence;
-            this.weighBridgeMaster = weighBridgeMaster;
-        }
+    @SerializedName("locationName")
+    @Expose
+    private String locationName;
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
+    @SerializedName("locationCode")
+    @Expose
+    private String locationCode;
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
+    @SerializedName("parentLocationCode")
+    @Expose
+    private String parentLocationCode;
 
-    public String getCreatedDate() {
-        return createdDate;
-    }
+    @SerializedName("locationType")
+    @Expose
+    private String locationType;
 
-    public void setCreatedDate(String createdDate) {
-        this.createdDate = createdDate;
-    }
+    @SerializedName("sequence")
+    @Expose
+    private int sequence;
 
-    public List<Object> getCurrentQueue() {
-        return currentQueue;
-    }
+    @SerializedName("detectableBy")
+    @Expose
+    private String detectableBy;
 
-    public void setCurrentQueue(List<Object> currentQueue) {
-        this.currentQueue = currentQueue;
-    }
+    @SerializedName("isActive")
+    @Expose
+    private boolean isActive;
 
-    public String getDetectableBy() {
-        return detectableBy;
-    }
+    @SerializedName("displayName")
+    @Expose
+    private String displayName;
 
-    public void setDetectableBy(String detectableBy) {
-        this.detectableBy = detectableBy;
-    }
+    @SerializedName("maxQueueSize")
+    @Expose
+    private int maxQueueSize;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+    @SerializedName("minQueueSize")
+    @Expose
+    private int minQueueSize;
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+    @SerializedName("createdBy")
+    @Expose
+    private String createdBy;
 
-    public boolean isActive() {
-        return isActive;
-    }
+    @SerializedName("createdDate")
+    @Expose
+    private String createdDate;
 
-    public void setActive(boolean active) {
-        isActive = active;
-    }
+    @SerializedName("modifiedBy")
+    @Expose
+    private String modifiedBy;
 
-    public String getLocationCode() {
-        return locationCode;
-    }
+    @SerializedName("modifiedDate")
+    @Expose
+    private String modifiedDate;
 
-    public void setLocationCode(String locationCode) {
+    @SerializedName("weighBridgeMaster")
+    @Expose
+    private List<Object> weighBridgeMaster;
+
+    @SerializedName("currentQueue")
+    @Expose
+    private List<Object> currentQueue;
+
+    public Location(int locationId, String locationName, String locationCode, String parentLocationCode, String locationType, int sequence, String detectableBy, boolean isActive, String displayName, int maxQueueSize, int minQueueSize, String createdBy, String createdDate, String modifiedBy, String modifiedDate, List<Object> weighBridgeMaster, List<Object> currentQueue) {
+        this.locationId = locationId;
+        this.locationName = locationName;
         this.locationCode = locationCode;
+        this.parentLocationCode = parentLocationCode;
+        this.locationType = locationType;
+        this.sequence = sequence;
+        this.detectableBy = detectableBy;
+        this.isActive = isActive;
+        this.displayName = displayName;
+        this.maxQueueSize = maxQueueSize;
+        this.minQueueSize = minQueueSize;
+        this.createdBy = createdBy;
+        this.createdDate = createdDate;
+        this.modifiedBy = modifiedBy;
+        this.modifiedDate = modifiedDate;
+        this.weighBridgeMaster = weighBridgeMaster;
+        this.currentQueue = currentQueue;
     }
 
     public int getLocationId() {
@@ -118,12 +110,60 @@ public class Location {
         this.locationName = locationName;
     }
 
-    public Object getLocationType() {
+    public String getLocationCode() {
+        return locationCode;
+    }
+
+    public void setLocationCode(String locationCode) {
+        this.locationCode = locationCode;
+    }
+
+    public String getParentLocationCode() {
+        return parentLocationCode;
+    }
+
+    public void setParentLocationCode(String parentLocationCode) {
+        this.parentLocationCode = parentLocationCode;
+    }
+
+    public String getLocationType() {
         return locationType;
     }
 
-    public void setLocationType(Object locationType) {
+    public void setLocationType(String locationType) {
         this.locationType = locationType;
+    }
+
+    public int getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
+    }
+
+    public String getDetectableBy() {
+        return detectableBy;
+    }
+
+    public void setDetectableBy(String detectableBy) {
+        this.detectableBy = detectableBy;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public int getMaxQueueSize() {
@@ -142,36 +182,36 @@ public class Location {
         this.minQueueSize = minQueueSize;
     }
 
-    public Object getModifiedBy() {
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(String createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getModifiedBy() {
         return modifiedBy;
     }
 
-    public void setModifiedBy(Object modifiedBy) {
+    public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
     }
 
-    public Object getModifiedDate() {
+    public String getModifiedDate() {
         return modifiedDate;
     }
 
-    public void setModifiedDate(Object modifiedDate) {
+    public void setModifiedDate(String modifiedDate) {
         this.modifiedDate = modifiedDate;
-    }
-
-    public Object getParentLocationCode() {
-        return parentLocationCode;
-    }
-
-    public void setParentLocationCode(Object parentLocationCode) {
-        this.parentLocationCode = parentLocationCode;
-    }
-
-    public int getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(int sequence) {
-        this.sequence = sequence;
     }
 
     public List<Object> getWeighBridgeMaster() {
@@ -180,5 +220,13 @@ public class Location {
 
     public void setWeighBridgeMaster(List<Object> weighBridgeMaster) {
         this.weighBridgeMaster = weighBridgeMaster;
+    }
+
+    public List<Object> getCurrentQueue() {
+        return currentQueue;
+    }
+
+    public void setCurrentQueue(List<Object> currentQueue) {
+        this.currentQueue = currentQueue;
     }
 }

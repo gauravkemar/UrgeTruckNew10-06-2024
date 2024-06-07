@@ -17,7 +17,10 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -263,6 +266,138 @@
                     />
             </androidx.constraintlayout.widget.ConstraintLayout>
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clProductVerification"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+
+                >
+                <TextView
+                    android:id="@+id/tvProdInvoice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="PRODUCT VERIFICATION"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    />
+                <TextView
+                    android:id="@+id/tvProdVRN"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="VRN:"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvProdInvoice"
+                    app:layout_constraintEnd_toStartOf="@+id/tvProdVRNValue"
+                    />
+                <TextView
+                    android:id="@+id/tvProdVRNValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/black"
+                    android:textAlignment="center"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintTop_toBottomOf="@+id/tvProdInvoice"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvProdVRN"
+                    />
+                <TextView
+                    android:id="@+id/tvProdTransactionId"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Transaction ID:"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    app:layout_constraintTop_toBottomOf="@+id/tvProdVRN"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvProdTransactionIdValue"
+                    />
+                <TextView
+                    android:id="@+id/tvProdTransactionIdValue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:padding="5dp"
+                    android:layout_margin="5dp"
+                    android:textColor="@color/black"
+                    android:textAlignment="center"
+                    app:layout_constraintTop_toBottomOf="@+id/tvProdVRNValue"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/tvProdTransactionId"
+                    />
+                <View
+                    android:id="@+id/view2"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_margin="5dp"
+                    android:background="@color/primaryColor"
+                     app:layout_constraintTop_toBottomOf="@+id/tvProdTransactionId"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+                <include
+                    android:id="@+id/table_first_item_product_list"
+                    layout="@layout/table_first_item_product_verification"
+                    android:layout_width="match_parent"
+                    android:visibility="gone"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/view2"
+                    app:layout_constraintBottom_toTopOf="@+id/rcProdList"/>
+                <TextView
+                    android:id="@+id/tvProdNoInvoiceFound"
+                    android:layout_width="wrap_content"
+                    android:text="No Invoice Found for verification!!"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    android:textSize="12sp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/view2"
+                    app:layout_constraintBottom_toTopOf="@+id/btnProdSubmit"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    />
+
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcProdList"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:visibility="visible"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    tools:listitem="@layout/exit_clearance_invoice_check_list_item"
+                    app:layout_constraintBottom_toTopOf="@+id/btnProdSubmit"
+                    app:layout_constraintTop_toBottomOf="@+id/table_first_item_product_list"
+                    />
+
+                <Button
+                    android:id="@+id/btnProdSubmit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:backgroundTint="@color/secondaryColor"
+                    android:text="Submit"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clPhysicalCheck"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -377,8 +512,6 @@
                 android:layout_height="match_parent"
                 android:visibility="gone"
                 />
-
-
             <LinearLayout
                 android:id="@+id/ll_scan"
                 android:visibility="visible"

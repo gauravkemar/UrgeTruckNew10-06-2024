@@ -172,7 +172,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/cardview_tagfid"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/cardview_securitycheck"
-                app:layout_constraintBottom_toTopOf="@+id/cardview_start_invoice"
+                app:layout_constraintBottom_toTopOf="@+id/cardview_admin"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="8dp">
@@ -220,7 +220,7 @@
                 android:layout_height="0dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/cardview_securitycheck"
-                app:layout_constraintEnd_toStartOf="@+id/cardview_start_invoice"
+                app:layout_constraintEnd_toStartOf="@+id/cardview_admin"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="8dp"
@@ -264,7 +264,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/cardview_start_invoice"
+                android:id="@+id/cardview_admin"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 app:layout_constraintTop_toBottomOf="@+id/cardview_physicalcheck"
@@ -272,7 +272,7 @@
                 app:layout_constraintStart_toEndOf="@+id/cardview_track"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_margin="8dp"
-                android:visibility="visible"
+                android:visibility="invisible"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="8dp">
 
@@ -289,7 +289,7 @@
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_marginBottom="30dp"
-                        android:src="@drawable/truck_loading"
+                        android:src="@drawable/ic_admin"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHeight_percent="0.50"
@@ -300,7 +300,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Truck Loading"
+                        android:text="Admin"
                         android:textAlignment="center"
                         android:textAllCaps="true"
                         android:textStyle="bold"
